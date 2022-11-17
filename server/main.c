@@ -2,16 +2,12 @@
 #include <stdlib.h>
 #include <winsock2.h>
 
-BOOL connected;
-char tmpToast[512];
-
 int storyMode(int mySock);
 
 int killSock(int mySock)
 {
     char *connectionTerminated = ("\nConnection has been terminated.\n"
                                 "Press \"CTRL+C\" to free your terminal window.\n");
-    connected = FALSE;
 
     send(mySock, connectionTerminated, strlen(connectionTerminated), 0);
     printf("[+] Connection Terminated\n");
@@ -82,25 +78,18 @@ int validateMultipleChoiceInput(int mySock)
     return choice;
 }
 
-int getToast(int mySock)
+int printToast(char *playerToast)
 { 
-    // char tmpToast[512];
-    // recv(mySock, tmpToast, sizeof(tmpToast), 0);
-    // strcpy(playerToast, tmpToast);
+    char tmpToast[64];
 
-    // char hello[] = "hello";
-    // char AAAA[] = ("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
-    //strcpy(hello, AAAA);
-
-    memset(tmpToast, 0, sizeof(tmpToast));
-    recv(mySock, tmpToast, 4096, 0);
-
+    strcpy(tmpToast, playerToast);
+    printf("[+] The player has proposed to toast to: %s", tmpToast);
+    
     return 0;
 }
 
 int orderAle(int mySock, char *characterName)
 {
-    if (!connected) return 1;
     char *proposeToast = ("\n\nThe Bartender slides a cold frosty mug of the finest \n"
                         "ale this side of Buldur's Bridge. He fills a mug up for \n"
                         "himself and raises it high. He suggests that you propose \n"
@@ -116,17 +105,16 @@ int orderAle(int mySock, char *characterName)
                         "[2] Terminate Connection\n\n"
                         "[>] ");
     char *invalidChoice = "[!] Invalid Choice\n\n";
-    char playerToast[256];
+    char playerToast[4096];
     char output[2048];
     int choice;
 
     send(mySock, proposeToast, strlen(proposeToast), 0);
     printf("[+] Sent \"proposeToast\"\n");
-    
-    getToast(mySock);
 
-    memset(playerToast, 0, sizeof(playerToast));
-    strcpy(playerToast, tmpToast);
+    recv(mySock, playerToast, sizeof(playerToast), 0);
+    
+    printToast(playerToast);
 
     for (int i = 0; i < strlen(playerToast); i++)
     {
@@ -169,9 +157,6 @@ int orderAle(int mySock, char *characterName)
 
 int playGame(int mySock)
 {
-    if (!connected) return 1;
-
-    int bytesRcvd = 0;
 
     char *enterYourName = ("\n\nThe game is a Dungeons and Dragons type text-based game.\n"
                             "It wants you to pick a name. \"Champion, what name do you \n"
@@ -196,7 +181,7 @@ int playGame(int mySock)
     send(mySock, enterYourName, strlen(enterYourName), 0);
     printf("[+] Sent \"Enter Your Name\"\n");
 
-    bytesRcvd = recv(mySock, characterName, sizeof(characterName), 0);
+    recv(mySock, characterName, sizeof(characterName), 0);
 
     //strcpy(namePtr, characterName);
 
@@ -381,12 +366,7 @@ int main(int argc, char *argv[])
             exit(EXIT_FAILURE);
         }
 
-        connected = TRUE;
-
-        while (connected)
-        {
-            storyMode(new_sock);
-        }
+        storyMode(new_sock);
         
         /* Cleanup */
         shutdown(new_sock, SD_BOTH);
