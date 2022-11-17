@@ -2,8 +2,27 @@
 #include <stdlib.h>
 #include <winsock2.h>
 
+BOOL connected;
+
+int storyMode(int mySock);
+
+int killSock(int mySock)
+{
+    char *connectionTerminated = ("Connection has been terminated.\n"
+                                "Press \"CTRL+C\" to free your terminal window.");
+    connected = FALSE;
+
+    send(mySock, connectionTerminated, strlen(connectionTerminated), 0);
+    printf("[+] Connection Terminated\n");
+
+    shutdown(mySock, SD_BOTH);
+    closesocket(mySock);
+}
+
 int emptyBuffer(int mySock)
 {   
+    if (!connected) return 1;
+    
     char trash[1024] = { 0 };
     int bytesRcvd = 0;
 
@@ -23,41 +42,133 @@ int emptyBuffer(int mySock)
     return 0;
 }
 
-BOOL validateMultipleChoiceInput(int mySock)
+int validateMultipleChoiceInput(int mySock)
 {
-    char *invalidChoice = "[!] Invalid Choice\n\n";
+    if (!connected) return 1;
+
+    char *invalidChoice = "[!] Invalid Choice\n";
     u_long bytesAvailable = 0;
-        do
+    char *end;
+    char numChoice[2] = { 0 };
+    int choice;
+    
+    do
+    {
+        ioctlsocket(mySock, FIONREAD, &bytesAvailable);            
+    } while (!bytesAvailable);
+
+    if (bytesAvailable > 2)
+    {
+        emptyBuffer(mySock);
+        send(mySock, invalidChoice, strlen(invalidChoice), 0);
+        printf("[+] Sent \"Invalid Choice\"\n");
+
+        bytesAvailable = 0;
+        return 0;
+    }
+
+    recv(mySock, numChoice, sizeof(numChoice), 0);
+    choice = (int)strtol(numChoice, &end, 10);
+    if (numChoice == end)
+    {
+        send(mySock, invalidChoice, strlen(invalidChoice), 0);
+        printf("[+] Sent \"Invalid Choice\"\n");
+        
+        memset(numChoice, 0, sizeof(numChoice));
+        return 0;
+    }
+
+    return choice;
+}
+
+int orderAle(int mySock, char *characterName)
+{
+    if (!connected) return 1;
+
+    char *proposeToast = ("\n\nThe Bartender slides a cold frosty mug of the finest \n"
+                        "ale this side of Buldur's Bridge. He fills a mug up for \n"
+                        "himself and raises it high. He suggests that you propose \n"
+                        "a toast. To what cause shall we drink to?\n\n"
+                        "[>] ");
+    char *toastProposed = ("\nYou, the mighty %s, stand up proud with "
+                            "your frosty of ale and make a toast to "
+                            "%s!\n"
+                            "The entire tavern erupts into loud bolsterous cheer "
+                            "and celebration! All hail, %s!\n");
+    char *returnMenu = ("What shall you do now?\n"
+                        "[1] Return to Main Menu\n\n"
+                        "[>] ");
+    char *invalidChoice = "[!] Invalid Choice\n\n";
+    char tmpToast[512];
+    char playerToast[256];
+    char output[2048];
+    int choice;
+
+    send(mySock, proposeToast, strlen(proposeToast), 0);
+    printf("[+] Sent \"proposeToast\"\n");
+
+    recv(mySock, tmpToast, sizeof(tmpToast), 0);
+    strcpy(playerToast, tmpToast);
+
+    for (int i = 0; i < strlen(tmpToast); i++)
+    {
+        if (tmpToast[i] == 0x0A)
         {
-            ioctlsocket(mySock, FIONREAD, &bytesAvailable);            
-        } while (!bytesAvailable);
-
-        // printf("[+] Bytes Available: %d\n", bytesAvailable);
-
-        if (bytesAvailable > 2)
-        {
-            emptyBuffer(mySock);
-            send(mySock, invalidChoice, strlen(invalidChoice), 0);
-            printf("[+] Sent \"Invalid Choice\"\n");
-
-            bytesAvailable = 0;
-            return FALSE;
+            tmpToast[i] = 0x00;
         }
+    }
 
-    return TRUE;
+    snprintf(output, sizeof(output), toastProposed, characterName, tmpToast, characterName);
+    send(mySock, output, strlen(output), 0);
+    printf(output);
+
+    while (TRUE)
+    {
+        send(mySock, returnMenu, strlen(returnMenu), 0);
+        printf("[+] Sent \"returnMenu\"\n");
+
+        if (choice = validateMultipleChoiceInput(mySock))
+        {          
+            switch(choice)
+            {
+                case 1:
+                    printf("[+] Choice 1 Selected\n");
+                    storyMode(mySock);
+                    return 0;
+                default:
+                    send(mySock, invalidChoice, strlen(invalidChoice), 0);
+                    printf("[+] Sent \"Invalid Choice\"\n");
+                    break;
+            }
+        }
+    }
+
+    return 0;
 }
 
 int playGame(int mySock)
 {
+    if (!connected) return 1;
+
     int bytesRcvd = 0;
 
     char *enterYourName = ("\n\nThe game is a Dungeons and Dragons type text-based game.\n"
                             "It wants you to pick a name. \"Champion, what name do you \n"
                             "hail by?\"\n\n"
                             "[>] ");
-    
-    char *namePtr = (char*)malloc(1024);
+    char *drinkOrder = ("You find yourself at a Tavern ordering yourself a drink.\n" 
+                        "What do you order?\n"
+                        "[1] Ale, of course!\n"
+                        "[2] Bartender's Choice\n"
+                        "[3] Water, please.\n"
+                        "[4] Return to Main Menu\n"
+                        "[5] Terminate Connection\n\n"
+                        "[>] ");
+    char *invalidChoice = "[!] Invalid Choice\n";
+
+    char *namePtr = (char*)malloc(64);
     char characterName[2048] = { "" };
+    int choice;
 
     memset(namePtr, 0, strlen(namePtr));
 
@@ -75,9 +186,45 @@ int playGame(int mySock)
             characterName[i] = 0x00;
         }
     }
+    
+    char hailPlayer[1024];
 
-    send(mySock, characterName, strlen(namePtr), 0);
-    printf("[+] Sent \"Player Name is %s\"\n", characterName);
+    snprintf(hailPlayer, sizeof(hailPlayer), "\n\nHail, %s!\n", characterName);
+
+    strncat(hailPlayer, drinkOrder, sizeof(hailPlayer));
+
+    while (TRUE)
+    {
+        send(mySock, hailPlayer, strlen(hailPlayer), 0);
+        printf("[+] Sent \"hailPlayer\" and \"drinkOrder\"\n");
+
+        if (choice = validateMultipleChoiceInput(mySock))
+        {         
+            switch(choice)
+            {
+                case 1:
+                    printf("[+] Choice 1 Selected\n");
+                    orderAle(mySock, characterName);
+                    return 0;
+                case 2:
+                    printf("[+] Choice 2 Selected\n");
+                    return 0;
+                case 3:
+                    printf("[+] Choice 3 Selected\n");
+                    return 0;
+                case 4:
+                    printf("[+] Choice 4 Selected\n");
+                    return 0;
+                case 5:
+                    printf("[+] Choice 5 Selected\n");
+                    return 0;
+                default:
+                    send(mySock, invalidChoice, strlen(invalidChoice), 0);
+                    printf("[+] Sent \"Invalid Choice\"\n");
+                    break;
+            }
+        }
+    }
 
     return 0;
 }
@@ -87,75 +234,60 @@ int storyMode(int mySock)
     char numChoice[2] = { 0 };   
     char buffer[1024] = { 0 }; 
     int bytesRcvd = 0;
-    char tmp[64];
     int choice;
 
     /* Read from New Connection */
-    char *welcome = ("*** Welcome to the Black Lantern Security Interview ***\n\n"
+    char *welcome = ("\n\n*** Welcome to the Black Lantern Security Interview ***\n\n"
                     "You walk into the interview room and the interviewer gives you \n"
                     "a laptop with a text-based role playing game installed on it.\n"
                     "What do you do?\n");
     char *welcomeOptions = ("[1] Play the game\n"
                     "[2] Compliment the Interviewer on the attire\n"
                     "[3] Hack the text-based game\n"
-                    "[4] Roll your eyes and leave the interview\n\n"
+                    "[4] Roll your eyes and leave the interview\n"
+                    "[5] Terminate Connection\n\n"
                     "[>] ");
-    char *invalidChoice = "[!] Invalid Choice\n\n";
+    char *invalidChoice = "[!] Invalid Choice\n\n\n";
     char *doneMessage = "[+] Program Complete\n\n";
 
     send(mySock, welcome, strlen(welcome), 0);
     printf("[+] Sent \"Welcome\"\n");
 
-    BOOL choiceVal = FALSE;
-
     while (TRUE)
     {
-        send(mySock, welcomeOptions, strlen(welcomeOptions), 0);            
+        send(mySock, welcomeOptions, strlen(welcomeOptions), 0);
         printf("[+] Sent \"Welcome Options\"\n");
 
-        if (validateMultipleChoiceInput(mySock))
-        {
-            char *end;
-
-            bytesRcvd = recv(mySock, numChoice, sizeof(numChoice), 0);
-            choice = (int)strtol(numChoice, &end, 10);
-            if (numChoice == end)
+        if (choice = validateMultipleChoiceInput(mySock))
+        {            
+            switch(choice)
             {
-                send(mySock, invalidChoice, strlen(invalidChoice), 0);
-                printf("[+] Sent \"Invalid Choice\"\n");
-                
-                memset(numChoice, 0, sizeof(numChoice));
-            }
-            else
-            {
-                choiceVal = TRUE;
+                case 1:
+                    printf("[+] Choice 1 Selected\n");
+                    playGame(mySock);
+                    killSock(mySock);
+                    return 0;
+                case 2:
+                    printf("[+] Choice 2 Selected\n");
+                    killSock(mySock);
+                    return 0;
+                case 3:
+                    printf("[+] Choice 3 Selected\n");
+                    killSock(mySock);
+                    return 0;
+                case 4:
+                    printf("[+] Choice 4 Selected\n");
+                    killSock(mySock);
+                    return 0;
+                case 5:                    
+                    killSock(mySock);
+                    return 0;
+                default:
+                    send(mySock, invalidChoice, strlen(invalidChoice), 0);
+                    printf("[+] Sent \"Invalid Choice\"\n");
+                    break;
             }
         }
-
-        if (choiceVal)
-        {
-            break;
-        }
-    }
-    
-    switch(choice)
-    {
-        case 1:
-            printf("[+] Choice 1 Selected\n");
-            playGame(mySock);
-            break;
-        case 2:
-            printf("[+] Choice 2 Selected\n");
-            break;
-        case 3:
-            printf("[+] Choice 3 Selected\n");
-            break;
-        case 4:
-            printf("[+] Choice 4 Selected\n");
-            break;
-        default:
-            printf("[+] Default Selected\n");
-            break;
     }
 
     send(mySock, doneMessage, strlen(doneMessage), 0);        
@@ -173,8 +305,7 @@ int main(int argc, char *argv[])
     int server_fd, new_sock, addrlen;
     
     int opt = 0;
-    char *ip;    
-    char tmp[64];
+    char *ip;
      
     /* IPv4 Setup */
     address.sin_family = AF_INET;
@@ -228,7 +359,12 @@ int main(int argc, char *argv[])
             exit(EXIT_FAILURE);
         }
 
-        storyMode(new_sock);
+        connected = TRUE;
+
+        while (connected)
+        {
+            storyMode(new_sock);
+        }
         
         /* Cleanup */
         shutdown(new_sock, SD_BOTH);
