@@ -3,13 +3,14 @@
 #include <winsock2.h>
 
 BOOL connected;
+char tmpToast[512];
 
 int storyMode(int mySock);
 
 int killSock(int mySock)
 {
-    char *connectionTerminated = ("Connection has been terminated.\n"
-                                "Press \"CTRL+C\" to free your terminal window.");
+    char *connectionTerminated = ("\nConnection has been terminated.\n"
+                                "Press \"CTRL+C\" to free your terminal window.\n");
     connected = FALSE;
 
     send(mySock, connectionTerminated, strlen(connectionTerminated), 0);
@@ -20,9 +21,7 @@ int killSock(int mySock)
 }
 
 int emptyBuffer(int mySock)
-{   
-    if (!connected) return 1;
-    
+{     
     char trash[1024] = { 0 };
     int bytesRcvd = 0;
 
@@ -44,13 +43,13 @@ int emptyBuffer(int mySock)
 
 int validateMultipleChoiceInput(int mySock)
 {
-    if (!connected) return 1;
-
     char *invalidChoice = "[!] Invalid Choice\n";
     u_long bytesAvailable = 0;
     char *end;
-    char numChoice[2] = { 0 };
+    char numChoice[2];
     int choice;
+
+    memset(numChoice, 0, sizeof(numChoice));
     
     do
     {
@@ -68,6 +67,8 @@ int validateMultipleChoiceInput(int mySock)
     }
 
     recv(mySock, numChoice, sizeof(numChoice), 0);
+    numChoice[1] = 0x00;
+    
     choice = (int)strtol(numChoice, &end, 10);
     if (numChoice == end)
     {
@@ -81,10 +82,25 @@ int validateMultipleChoiceInput(int mySock)
     return choice;
 }
 
+int getToast(int mySock)
+{ 
+    // char tmpToast[512];
+    // recv(mySock, tmpToast, sizeof(tmpToast), 0);
+    // strcpy(playerToast, tmpToast);
+
+    // char hello[] = "hello";
+    // char AAAA[] = ("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
+    //strcpy(hello, AAAA);
+
+    memset(tmpToast, 0, sizeof(tmpToast));
+    recv(mySock, tmpToast, 4096, 0);
+
+    return 0;
+}
+
 int orderAle(int mySock, char *characterName)
 {
     if (!connected) return 1;
-
     char *proposeToast = ("\n\nThe Bartender slides a cold frosty mug of the finest \n"
                         "ale this side of Buldur's Bridge. He fills a mug up for \n"
                         "himself and raises it high. He suggests that you propose \n"
@@ -96,29 +112,31 @@ int orderAle(int mySock, char *characterName)
                             "The entire tavern erupts into loud bolsterous cheer "
                             "and celebration! All hail, %s!\n");
     char *returnMenu = ("What shall you do now?\n"
-                        "[1] Return to Main Menu\n\n"
+                        "[1] Return to Main Menu\n"
+                        "[2] Terminate Connection\n\n"
                         "[>] ");
     char *invalidChoice = "[!] Invalid Choice\n\n";
-    char tmpToast[512];
     char playerToast[256];
     char output[2048];
     int choice;
 
     send(mySock, proposeToast, strlen(proposeToast), 0);
     printf("[+] Sent \"proposeToast\"\n");
+    
+    getToast(mySock);
 
-    recv(mySock, tmpToast, sizeof(tmpToast), 0);
+    memset(playerToast, 0, sizeof(playerToast));
     strcpy(playerToast, tmpToast);
 
-    for (int i = 0; i < strlen(tmpToast); i++)
+    for (int i = 0; i < strlen(playerToast); i++)
     {
-        if (tmpToast[i] == 0x0A)
+        if (playerToast[i] == 0x0A)
         {
-            tmpToast[i] = 0x00;
+            playerToast[i] = 0x00;
         }
     }
 
-    snprintf(output, sizeof(output), toastProposed, characterName, tmpToast, characterName);
+    snprintf(output, sizeof(output), toastProposed, characterName, playerToast, characterName);
     send(mySock, output, strlen(output), 0);
     printf(output);
 
@@ -134,6 +152,9 @@ int orderAle(int mySock, char *characterName)
                 case 1:
                     printf("[+] Choice 1 Selected\n");
                     storyMode(mySock);
+                    return 0;
+                case 2:
+                    printf("[+] Choice 2 Selected\n");
                     return 0;
                 default:
                     send(mySock, invalidChoice, strlen(invalidChoice), 0);
@@ -166,18 +187,18 @@ int playGame(int mySock)
                         "[>] ");
     char *invalidChoice = "[!] Invalid Choice\n";
 
-    char *namePtr = (char*)malloc(64);
+    //char *namePtr = (char*)malloc(64);
     char characterName[2048] = { "" };
     int choice;
 
-    memset(namePtr, 0, strlen(namePtr));
+    //memset(namePtr, 0, sizeof(namePtr));
 
     send(mySock, enterYourName, strlen(enterYourName), 0);
     printf("[+] Sent \"Enter Your Name\"\n");
 
     bytesRcvd = recv(mySock, characterName, sizeof(characterName), 0);
 
-    strcpy(namePtr, characterName);
+    //strcpy(namePtr, characterName);
 
     for (int i = 0; i < strlen(characterName); i++)
     {
@@ -351,6 +372,7 @@ int main(int argc, char *argv[])
     while (TRUE)
     {
         /* Accept Connection */
+        printf("[+] You can connect to the server using \"ncat localhost 379\"\n");
         printf("[+] Listening for Connection...\n");
         addrlen = sizeof(address);
         if ((new_sock = accept(server_fd, (struct sockaddr*) &address, &addrlen)) == INVALID_SOCKET)

