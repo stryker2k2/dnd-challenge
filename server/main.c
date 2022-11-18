@@ -95,17 +95,16 @@ int orderAle(int mySock, char *characterName)
                         "himself and raises it high. He suggests that you propose \n"
                         "a toast. To what cause shall we drink to?\n\n"
                         "[>] ");
-    char *toastProposed = ("\nYou, the mighty %s, stand up proud with "
-                            "your frosty of ale and make a toast to "
-                            "%s!\n"
-                            "The entire tavern erupts into loud bolsterous cheer "
-                            "and celebration! All hail, %s!\n");
+    char *toastProposed = ("\n\nYou, the mighty %s, stand up proud with your frosty \n"
+                            "mug of ale and make a toast to %s!\n"
+                            "The entire tavern erupts into loud bolsterous cheer \n"
+                            "and celebration! All hail %s!\n");
     char *returnMenu = ("What shall you do now?\n"
                         "[1] Return to Main Menu\n"
                         "[2] Terminate Connection\n\n"
                         "[>] ");
     char *invalidChoice = "[!] Invalid Choice\n\n";
-    char playerToast[4096];
+    char playerToast[128];
     char output[2048];
     int choice;
 
@@ -124,9 +123,16 @@ int orderAle(int mySock, char *characterName)
         }
     }
 
+    for (int i = 0; i < strlen(characterName); i++)
+    {
+        if (characterName[i] == 0x0A)
+        {
+            characterName[i] = 0x00;
+        }
+    }
+
     snprintf(output, sizeof(output), toastProposed, characterName, playerToast, characterName);
     send(mySock, output, strlen(output), 0);
-    printf(output);
 
     while (TRUE)
     {
@@ -162,8 +168,8 @@ int playGame(int mySock)
                             "It wants you to pick a name. \"Champion, what name do you \n"
                             "hail by?\"\n\n"
                             "[>] ");
-    char *drinkOrder = ("You find yourself at a Tavern ordering yourself a drink.\n" 
-                        "What do you order?\n"
+    char *drinkOrder = ("\n\nHail, Adventurer! You find yourself at a Tavern ordering \n"
+                        "yourself a drink. What do you order?\n"
                         "[1] Ale, of course!\n"
                         "[2] Bartender's Choice\n"
                         "[3] Water, please.\n"
@@ -172,37 +178,18 @@ int playGame(int mySock)
                         "[>] ");
     char *invalidChoice = "[!] Invalid Choice\n";
 
-    //char *namePtr = (char*)malloc(64);
     char characterName[2048] = { "" };
     int choice;
-
-    //memset(namePtr, 0, sizeof(namePtr));
 
     send(mySock, enterYourName, strlen(enterYourName), 0);
     printf("[+] Sent \"Enter Your Name\"\n");
 
     recv(mySock, characterName, sizeof(characterName), 0);
 
-    //strcpy(namePtr, characterName);
-
-    for (int i = 0; i < strlen(characterName); i++)
-    {
-        if (characterName[i] == 0x0A)
-        {
-            characterName[i] = 0x00;
-        }
-    }
-    
-    char hailPlayer[1024];
-
-    snprintf(hailPlayer, sizeof(hailPlayer), "\n\nHail, %s!\n", characterName);
-
-    strncat(hailPlayer, drinkOrder, sizeof(hailPlayer));
-
     while (TRUE)
     {
-        send(mySock, hailPlayer, strlen(hailPlayer), 0);
-        printf("[+] Sent \"hailPlayer\" and \"drinkOrder\"\n");
+        send(mySock, drinkOrder, strlen(drinkOrder), 0);
+        printf("[+] Sent \"drinkOrder\"\n");
 
         if (choice = validateMultipleChoiceInput(mySock))
         {         
