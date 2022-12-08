@@ -1,12 +1,28 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <winsock2.h>
+#include <time.h>
 
 int sockHandle;
+char *invalidChoice = "[!] Invalid Choice\n\n\r";
+time_t tme;
 
 int storyMode(int mySock);
 int validateBytes(char *inputString);
 int killSock(int mySock);
+int validateMultipleChoiceInput(int mySock);
+int returnMainMenu(int mySock);
+
+int addNullTerminator(char *fixString)
+{
+    for (int i = 0; i < strlen(fixString); i++)
+    {
+        if (fixString[i] == 0x0A)
+        {
+            fixString[i] = 0x00;
+        }
+    }
+}
 
 int printKey()
 {
@@ -53,6 +69,43 @@ int killSock(int mySock)
     closesocket(mySock);
 }
 
+int returnMainMenu(int mySock)
+{
+    int choice;
+
+    char *returnMenu = ("\rWhat shall you do now?\n"
+                        "\r[1] Return to Main Menu\n"
+                        "\r[2] Terminate Connection\n\n"
+                        "\r[>] ");
+
+    while (TRUE)
+    {
+        send(mySock, returnMenu, strlen(returnMenu), 0);
+        printf("[+] Sent \"returnMenu\"\n");
+
+        while (choice = validateMultipleChoiceInput(mySock))
+        {          
+            switch(choice)
+            {
+                case -1:
+                    break;
+                case 1:
+                    printf("[+] Main Menu Selected\n");
+                    storyMode(mySock);
+                    return 0;
+                case 2:
+                    printf("[+] Disconnect Selected\n");
+                    return 0;
+                default:
+                    send(mySock, invalidChoice, strlen(invalidChoice), 0);
+                    send(mySock, returnMenu, strlen(returnMenu), 0);
+                    printf("[+] Sent \"Invalid Choice & Return Menu\"\n");                    
+                    break;
+            }
+        }
+    }
+}
+
 int emptyBuffer(int mySock)
 {     
     char trash[1024];
@@ -84,7 +137,7 @@ int emptyBuffer(int mySock)
 
 int validateMultipleChoiceInput(int mySock)
 {
-    char *invalidChoice = "[!] Invalid Choice\n\r";
+    //char *invalidChoice = "[!] Invalid Choice\n\r";
     u_long bytesAvailable = 0;
     char *end;
     char numChoice[2];
@@ -139,7 +192,7 @@ int validateBytes(char *inputString)
         {
             if ((BYTE)inputString[i+1] == 0x0a)
             {
-                // printf("PuTTY (0x0d, 0x0a)\n");
+                printf("PuTTY (0x0d, 0x0a)\n");
                 return 1;
             }
         }
@@ -148,7 +201,7 @@ int validateBytes(char *inputString)
         {
             if ((BYTE)inputString[i+1] == 0xfb)
             {
-                // printf("PuTTY (0xff, 0xfb)\n");
+                printf("PuTTY (0xff, 0xfb)\n");
                 return 1;
             }
         }
@@ -174,6 +227,271 @@ int logMe(char *logme)
     return 0;
 }
 
+int perceptOne(int mySock)
+{
+    int choice;
+    int bounces;
+    char output[2048];
+    char *pOneOptions = ("\rWhat shall you do now?\n"
+                        "\r[1] Grab a paddle and flip it upwards in the air\n"
+                        "\r[2] Try to bounce the ping pong ball on the paddle\n"
+                        "\r[3] Return to Main Menu\n"
+                        "\r[4] Terminate Connection\n\n"
+                        "\r[>] ");
+
+    char *pOneOptOne = ("\r\n\nSmoother than an Olympic Diver and as cunning as the \n"
+                            "\rlocal Brazilian Jiu-Jitsu student, you gracefully fling the \n"
+                            "\rpaddle upwards as it does a 720 degree backwards flip \n"
+                            "\rand land elegantly back in your hand.\n");
+
+    char *pOneOptTwo = ("\r\n\nYou firmly grab the ping pong paddle and with fierce \n"
+                            "\rdetermination, you drop the ping pong ball onto the \n"
+                            "\rpaddle and start bouncing it on the paddle. Ping - pong - \n"
+                            "\rping - pong - you successfully bounce the ball %d \n"
+                            "\rtimes before it bounces out of your control!\n");
+    
+    srand((unsigned) time(&tme));
+    bounces = ((rand() % 20) + 5); // 5 to 25 bounces
+
+    snprintf(output, sizeof(output), pOneOptTwo, bounces);
+    
+    while (TRUE)
+    {
+        send(mySock, pOneOptions, strlen(pOneOptions), 0);
+        printf("[+] Sent \"pOneOptions\"\n");
+
+        while (choice = validateMultipleChoiceInput(mySock))
+        {          
+            switch(choice)
+            {
+                case -1:
+                    break;
+                case 1:
+                    printf("[+] Flip Paddle Selected\n");
+                    send(mySock, pOneOptOne, strlen(pOneOptOne), 0);
+                    returnMainMenu(mySock);
+                    return 0;
+                case 2:
+                    printf("[+] Bounce Ball Selected\n");
+                    send(mySock, output, strlen(output), 0);
+                    returnMainMenu(mySock);
+                    return 0;
+                case 3:
+                    printf("[+] Main Menu Selected\n");
+                    storyMode(mySock);
+                    return 0;
+                case 4:
+                    printf("[+] Disconnect Selected\n");
+                    return 0;
+                default:
+                    send(mySock, invalidChoice, strlen(invalidChoice), 0);
+                    send(mySock, pOneOptions, strlen(pOneOptions), 0);
+                    printf("[+] Sent \"Invalid Choice & pOneOptions\"\n");                    
+                    break;
+            }
+        }
+    }
+}
+
+int perceptTwo(int mySock)
+{
+    int choice;
+    char *pTwoOptions = ("\rWhat shall you do now?\n"
+                        "\r[1] Eagerly brew yourself a cup of coffee!\n"
+                        "\r[2] Kindly brew a cup for the Reverse Engineer guy\n"
+                        "\r[3] Return to Main Menu\n"
+                        "\r[4] Terminate Connection\n\n"
+                        "\r[>] ");
+
+    char *pTwoOptOne = ("\r\n\nYou eagerly make your amazing coffee selection and wait \n"
+                            "\rforever for it to brew. It is too hot to drink right now but \n"
+                            "\rthose freshly ground beans make it worth the wait!\n");
+
+    char *pTwoOptTwo = ("\r\n\nYou calmly walk over to the resident Reverse Engineer guy and \n"
+                            "\rgive him the cup of freshly brewed coffee. He smiles, takes \n"
+                            "\ra sip, then starts to think outloud to himself. He says, \n"
+                            "\r\"Ya know, I think there is a bug in my program. A user could \n"
+                            "\reasily overflow the buffer. Hmmm, I should fix that.\"\n");
+    
+    while (TRUE)
+    {
+        send(mySock, pTwoOptions, strlen(pTwoOptions), 0);
+        printf("[+] Sent \"pOneOptions\"\n");
+
+        while (choice = validateMultipleChoiceInput(mySock))
+        {          
+            switch(choice)
+            {
+                case -1:
+                    break;
+                case 1:
+                    printf("[+] Flip Paddle Selected\n");
+                    send(mySock, pTwoOptOne, strlen(pTwoOptOne), 0);
+                    returnMainMenu(mySock);
+                    return 0;
+                case 2:
+                    printf("[+] Bounce Ball Selected\n");
+                    send(mySock, pTwoOptTwo, strlen(pTwoOptTwo), 0);
+                    returnMainMenu(mySock);
+                    return 0;
+                case 3:
+                    printf("[+] Main Menu Selected\n");
+                    storyMode(mySock);
+                    return 0;
+                case 4:
+                    printf("[+] Disconnect Selected\n");
+                    return 0;
+                default:
+                    send(mySock, invalidChoice, strlen(invalidChoice), 0);
+                    send(mySock, pTwoOptions, strlen(pTwoOptions), 0);
+                    printf("[+] Sent \"Invalid Choice & pOneOptions\"\n");                    
+                    break;
+            }
+        }
+    }
+}
+
+int perceptThree(int mySock)
+{
+    int choice;
+    char *pThreeOptions = ("\rWhat shall you do now?\n"
+                        "\r[1] Grab the Nerf Gun and go hunting for the BLS Owners\n"
+                        "\r[2] Set up a Nerf Land Mine near the Nerf Machine Gun\n"
+                        "\r[3] Return to Main Menu\n"
+                        "\r[4] Terminate Connection\n\n"
+                        "\r[>] ");
+
+    char *pThreeOptOne = ("\r\n\nYou quickly grab the Nerf Nemesis Machine Gun with both \n"
+                            "\rhands and sprint into the nearest Owner's office screaming \n"
+                            "\r\"MEET MY LITTLE FRIEND\" at the top of your lungs. But, \n"
+                            "\rinstead of a surprise attack - you walk into an ambush. All the \n"
+                            "\rOwners unleash Nerf Fury upon you as you walk into the door.\n");
+
+    char *pThreeOptTwo = ("\r\n\nWith amazing skill and finesse, you set up the Nerf Land \n"
+                            "\rMine positioned perfect near the Nerf Nemesis Machine \n"
+                            "\rGun and lie patiently in the other room with the remote \n"
+                            "\rdetonator. One of the Owners walk towards it with delight \n"
+                            "\rin their eyes! As you press the Remote Detonator, you \n"
+                            "\rquickly remember that \"This Side Towards Enemy\" was \n"
+                            "\rfacing you! You get pelted by your own Nerf Land Mine!\n");
+    
+    while (TRUE)
+    {
+        send(mySock, pThreeOptions, strlen(pThreeOptions), 0);
+        printf("[+] Sent \"pOneOptions\"\n");
+
+        while (choice = validateMultipleChoiceInput(mySock))
+        {          
+            switch(choice)
+            {
+                case -1:
+                    break;
+                case 1:
+                    printf("[+] Flip Paddle Selected\n");
+                    send(mySock, pThreeOptOne, strlen(pThreeOptOne), 0);
+                    returnMainMenu(mySock);
+                    return 0;
+                case 2:
+                    printf("[+] Bounce Ball Selected\n");
+                    send(mySock, pThreeOptTwo, strlen(pThreeOptTwo), 0);
+                    returnMainMenu(mySock);
+                    return 0;
+                case 3:
+                    printf("[+] Main Menu Selected\n");
+                    storyMode(mySock);
+                    return 0;
+                case 4:
+                    printf("[+] Disconnect Selected\n");
+                    return 0;
+                default:
+                    send(mySock, invalidChoice, strlen(invalidChoice), 0);
+                    send(mySock, pThreeOptions, strlen(pThreeOptions), 0);
+                    printf("[+] Sent \"Invalid Choice & pOneOptions\"\n");                    
+                    break;
+            }
+        }
+    }
+}
+
+int searchOffice(int mySock)
+{
+    int choice;
+    int perception = 0;
+
+    char *perceptionOne = ("\r\n\nYou roll the three-sided dice and the number \"1\" is facing\n"
+                            "\rup. Your critical lack of perception focuses on the \n"
+                            "\rfirst thing you see - a ping pong table.\n");
+
+    char *perceptionTwo = ("\r\n\nYou roll the three-sided dice and the number \"2\" is \n"
+                            "\rfacing up. Your average amount of perception notices a \n"
+                            "\rfancy coffee machine in the break room.\n");
+
+    char *perceptionThree = ("\r\n\nYou roll the three-sided dice and the number \"3\" is \n"
+                            "\rfacing up. Your exceptional perception notices a Rival \n"
+                            "\rNemesis MXVII-10K NERF GUN on the conference table!\n");
+    
+    srand((unsigned) time(&tme));
+    perception = ((rand() % 3) + 1);
+    perception = 3;
+    
+    switch(perception)
+    {
+        case 1:
+            send(mySock, perceptionOne, strlen(perceptionOne), 0);
+            printf("[+] Perception is 1\n");
+            perceptOne(mySock);
+            break;
+        case 2:
+            send(mySock, perceptionTwo, strlen(perceptionTwo), 0);
+            printf("[+] Perception is 2\n");
+            perceptTwo(mySock);
+            break;
+        case 3:
+            send(mySock, perceptionThree, strlen(perceptionThree), 0);
+            printf("[+] Perception is 3\n");
+            perceptThree(mySock);
+            break;
+        default:
+            printf("[!] Perception is broken %d\n", perception);                
+            return 0;
+    }
+}
+
+int waterPlease(int mySock)
+{
+    char *barWater = ("\r\n\nThe Bartender grabs a pitcher full of water and pours it \n"
+                        "\rover your head; soaking your garments and causing the \n"
+                        "\rentire Tavern to roar with laughter.\n");
+    int choice;
+    
+    send(mySock, barWater, strlen(barWater), 0);
+    
+    printf("[+] Sent \"barWater\"\n");
+
+    returnMainMenu(mySock);
+
+    return 0;
+}
+
+int bartenderChoice(int mySock, char *characterName)
+{
+    char *barReply = ("\r\n\nThe Bartender scratches his head out of disbelief. After all, \n"
+                        "\ra mighty Warrior with a frightening name like %s \n"
+                        "\rshould obviously know what they want to drink.\n");
+    char output[2048];
+    int choice;
+    
+    addNullTerminator(characterName);
+    snprintf(output, sizeof(output), barReply, characterName);
+    send(mySock, output, strlen(output), 0);
+    
+    printf("[+] Sent \"barReply\"\n");
+
+    returnMainMenu(mySock);
+
+    return 0;
+}
+
 int orderAle(int mySock, char *characterName)
 {
     char *proposeToast = ("\r\n\nThe Bartender slides a cold frosty mug of the finest \n\r"
@@ -184,12 +502,8 @@ int orderAle(int mySock, char *characterName)
     char *toastProposed = ("\r\n\nYou, the mighty %s, stand up proud with your frosty \n\r"
                             "mug of ale and make a toast to %s!\n\r"
                             "The entire tavern erupts into loud bolsterous cheer \n\r"
-                            "and celebration! All hail %s!\n\r");
-    char *returnMenu = ("What shall you do now?\n\r"
-                        "[1] Return to Main Menu\n\r"
-                        "[2] Terminate Connection\n\n\r"
-                        "[>] ");
-    char *invalidChoice = "[!] Invalid Choice\n\n\r";
+                            "and celebration! Cheers to %s!\n\r");
+    
     char playerToast[1024];
     char output[2048];
     int choice;
@@ -205,50 +519,13 @@ int orderAle(int mySock, char *characterName)
     
     logMe(playerToast);
 
-    for (int i = 0; i < strlen(playerToast); i++)
-    {
-        if (playerToast[i] == 0x0A)
-        {
-            playerToast[i] = 0x00;
-        }
-    }
-
-    for (int i = 0; i < strlen(characterName); i++)
-    {
-        if (characterName[i] == 0x0A)
-        {
-            characterName[i] = 0x00;
-        }
-    }
+    addNullTerminator(playerToast);
+    addNullTerminator(characterName);
 
     snprintf(output, sizeof(output), toastProposed, characterName, playerToast, characterName);
     send(mySock, output, strlen(output), 0);
 
-    while (TRUE)
-    {
-        send(mySock, returnMenu, strlen(returnMenu), 0);
-        printf("[+] Sent \"returnMenu\"\n");
-
-        while (choice = validateMultipleChoiceInput(mySock))
-        {          
-            switch(choice)
-            {
-                case -1:
-                    break;
-                case 1:
-                    printf("[+] Choice 1 Selected\n");
-                    storyMode(mySock);
-                    return 0;
-                case 2:
-                    printf("[+] Choice 2 Selected\n");
-                    return 0;
-                default:
-                    send(mySock, invalidChoice, strlen(invalidChoice), 0);
-                    printf("[+] Sent \"Invalid Choice\"\n");
-                    break;
-            }
-        }
-    }
+    returnMainMenu(mySock);
 
     return 0;
 }
@@ -260,17 +537,18 @@ int playGame(int mySock)
                             "It wants you to pick a name. \"Champion, what name do you \n\r"
                             "hail by?\"\n\n\r"
                             "[>] ");
-    char *drinkOrder = ("\r\n\nHail, Adventurer! You find yourself at a Tavern ordering \n\r"
-                        "yourself a drink. What do you order?\n\r"
+    char *drinkOrder = ("\r\n\nHail, %s! You find yourself at a Tavern  \n\r"
+                        "ordering yourself a drink. What do you order?\n\r"
                         "[1] Ale, of course!\n\r"
                         "[2] Bartender's Choice\n\r"
                         "[3] Water, please.\n\r"
                         "[4] Return to Main Menu\n\r"
                         "[5] Terminate Connection\n\n\r"
                         "[>] ");
-    char *invalidChoice = "[!] Invalid Choice\n\r";
+    //char *invalidChoice = "[!] Invalid Choice\n\r";
 
     char characterName[2048] = { "" };
+    char output[2048];
     int choice;
 
     send(mySock, enterYourName, strlen(enterYourName), 0);
@@ -282,14 +560,12 @@ int playGame(int mySock)
         recv(mySock, characterName, sizeof(characterName), 0);
     }
 
-    // char *characterPtr = (char *)malloc(sizeof(characterName));
-    // memcpy(characterPtr, characterName, sizeof(characterName));
-
-    // memset(characterName, 0, sizeof(characterName));
+    addNullTerminator(characterName);
+    snprintf(output, sizeof(output), drinkOrder, characterName);    
 
     while (TRUE)
     {
-        send(mySock, drinkOrder, strlen(drinkOrder), 0);
+        send(mySock, output, strlen(output), 0);    
         printf("[+] Sent \"drinkOrder\"\n");
 
         while (choice = validateMultipleChoiceInput(mySock))
@@ -301,23 +577,26 @@ int playGame(int mySock)
                 case 1:
                     printf("[+] Choice 1 Selected\n");
                     orderAle(mySock, characterName);
-                    // free(characterPtr);
                     return 0;
                 case 2:
                     printf("[+] Choice 2 Selected\n");
+                    bartenderChoice(mySock, characterName);
                     return 0;
                 case 3:
                     printf("[+] Choice 3 Selected\n");
+                    waterPlease(mySock);
                     return 0;
                 case 4:
                     printf("[+] Choice 4 Selected\n");
+                    storyMode(mySock);
                     return 0;
                 case 5:
                     printf("[+] Choice 5 Selected\n");
                     return 0;
                 default:
                     send(mySock, invalidChoice, strlen(invalidChoice), 0);
-                    printf("[+] Sent \"Invalid Choice\"\n");
+                    send(mySock, drinkOrder, strlen(drinkOrder), 0);
+                    printf("[+] Sent \"Invalid Choice & drinkOrder\"\n");                    
                     break;
             }
         }
@@ -334,17 +613,17 @@ int storyMode(int mySock)
     int choice;
 
     /* Read from New Connection */
-    char *welcome = ("\n\n*** Welcome to the Black Lantern Security Interview ***\n\n\r"
-                    "You walk into the interview room and the interviewer gives you \n\r"
-                    "a laptop with a text-based role playing game installed on it.\n\r"
-                    "What do you do?\n\r");
-    char *welcomeOptions = ("[1] Play the game\n\r"
-                    "[2] Compliment the Interviewer on the attire\n\r"
-                    "[3] Hack the text-based game\n\r"
-                    "[4] Roll your eyes and leave the interview\n\r"
-                    "[5] Terminate Connection\n\n\r"
-                    "[>] ");
-    char *invalidChoice = "[!] Invalid Choice\n\n\n\r";
+    char *welcome = ("\n\n*** Welcome to the Black Lantern Christmas Party! ***\n\n"
+                    "\rYou walk into the Black Lantern Christmas Party at the \n"
+                    "\roffice and you see a laptop open with a game running.\n"
+                    "\rWhat do you do?\n\r");
+    char *welcomeOptions = ("\r[1] Play the game\n\r"
+                    "\r[2] Search the office (Roll a 3-sided dice for Perception)\n"
+                    "\r[3] Hack Black Lantern Security\n\r"
+                    "\r[4] Turn off the Christmas Music\n\r"
+                    "\r[5] Terminate Connection\n\n\r"
+                    "\r[>] ");
+    //char *invalidChoice = "[!] Invalid Choice\n\n\n\r";
     char *doneMessage = "[+] Program Complete\n\n\r";
 
     send(mySock, welcome, strlen(welcome), 0);
@@ -362,20 +641,21 @@ int storyMode(int mySock)
                 case -1:
                     break;
                 case 1:
-                    printf("[+] Choice 1 Selected\n");
+                    printf("[+] Play the Game Selected\n");
                     playGame(mySock);
                     killSock(mySock);
                     return 0;
                 case 2:
-                    printf("[+] Choice 2 Selected\n");
+                    printf("[+] Search the Office Selected\n");
+                    searchOffice(mySock);
                     killSock(mySock);
                     return 0;
                 case 3:
-                    printf("[+] Choice 3 Selected\n");
+                    printf("[+] Hack Black Lantern Security Selected\n");
                     killSock(mySock);
                     return 0;
                 case 4:
-                    printf("[+] Choice 4 Selected\n");
+                    printf("[+] Turn off the Christmas Music Selected\n");
                     killSock(mySock);
                     return 0;
                 case 5:                    
