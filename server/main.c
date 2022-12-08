@@ -8,7 +8,7 @@ char *invalidChoice = "[!] Invalid Choice\n\n\r";
 time_t tme;
 
 int storyMode(int mySock);
-int validateBytes(char *inputString);
+int checkIfPuTTY(char *inputString);
 int killSock(int mySock);
 int validateMultipleChoiceInput(int mySock);
 int returnMainMenu(int mySock);
@@ -58,7 +58,7 @@ int printKey()
 
 int killSock(int mySock)
 {
-    char *connectionTerminated = ("\nConnection has been terminated.\n"
+    char *connectionTerminated = ("\r\nConnection has been terminated.\n"
                                 "\rPress \"CTRL+C\" to free your terminal window.\n");
 
     send(mySock, connectionTerminated, strlen(connectionTerminated), 0);
@@ -67,6 +67,33 @@ int killSock(int mySock)
     Sleep(1);
     shutdown(mySock, SD_BOTH);
     closesocket(mySock);
+}
+
+int sockTimeout(int mySock)
+{
+    char *timeout = ("\r\n\n*** Your session has timed out ***\n");
+    u_long bytesAvailable = 0;    
+    clock_t startTime, current;
+
+    startTime = clock();
+
+    do
+    {
+        ioctlsocket(mySock, FIONREAD, &bytesAvailable);    
+        current = clock();
+        if (((current - startTime) / CLOCKS_PER_SEC) > 30.0)
+        {
+            printf("[!] User session has timed out\n");
+            send(mySock, timeout, strlen(timeout), 0);
+            Sleep(1000);
+            killSock(mySock);
+            Sleep(1000);            
+            return -2;
+        }
+
+    } while (!bytesAvailable);
+
+    return bytesAvailable;
 }
 
 int returnMainMenu(int mySock)
@@ -87,6 +114,9 @@ int returnMainMenu(int mySock)
         {          
             switch(choice)
             {
+                case -2:
+                    killSock(mySock);
+                    return 0;
                 case -1:
                     break;
                 case 1:
@@ -95,6 +125,7 @@ int returnMainMenu(int mySock)
                     return 0;
                 case 2:
                     printf("[+] Disconnect Selected\n");
+                    killSock(mySock);
                     return 0;
                 default:
                     send(mySock, invalidChoice, strlen(invalidChoice), 0);
@@ -110,24 +141,31 @@ int emptyBuffer(int mySock)
 {     
     char trash[1024];
     int bytesRcvd = 0;
+    u_long bytesAvailable = 0;
     int isPuTTY = 0;
 
-    do 
+    ioctlsocket(mySock, FIONREAD, &bytesAvailable);
+
+    if (bytesAvailable)
     {
-        bytesRcvd = recv(mySock, trash, sizeof(trash), 0);
-        isPuTTY = validateBytes(trash);
-        
-        printf("[~] Deleting the excess trash of %d bytes\n", bytesRcvd);
+        do 
+        {
+            bytesRcvd = recv(mySock, trash, sizeof(trash), 0);
+            isPuTTY = checkIfPuTTY(trash);
+            
+            printf("[~] Deleting the excess trash of %d bytes\n", bytesRcvd);
 
-        if (bytesRcvd < sizeof(trash))
-        {            
-            memset(trash, 0, sizeof(trash));
-            break;
-        }
-        
-    } while (bytesRcvd);
+            if (bytesRcvd < sizeof(trash))
+            {            
+                memset(trash, 0, sizeof(trash));
+                break;
+            }
+            
+        } while (bytesRcvd);
+    }
+    
 
-    if (isPuTTY = TRUE)
+    if (isPuTTY == TRUE)
     {
         return TRUE;
     }
@@ -137,7 +175,6 @@ int emptyBuffer(int mySock)
 
 int validateMultipleChoiceInput(int mySock)
 {
-    //char *invalidChoice = "[!] Invalid Choice\n\r";
     u_long bytesAvailable = 0;
     char *end;
     char numChoice[2];
@@ -146,10 +183,16 @@ int validateMultipleChoiceInput(int mySock)
 
     memset(numChoice, 0, sizeof(numChoice));
     
-    do
+    // do
+    // {
+    //     ioctlsocket(mySock, FIONREAD, &bytesAvailable);            
+    // } while (!bytesAvailable);
+
+    bytesAvailable = sockTimeout(mySock);
+    if(bytesAvailable == -2)
     {
-        ioctlsocket(mySock, FIONREAD, &bytesAvailable);            
-    } while (!bytesAvailable);
+        return -2;
+    }
 
     if (bytesAvailable > 2)
     {
@@ -164,9 +207,9 @@ int validateMultipleChoiceInput(int mySock)
 
         return 0;
     }
-
+    
     recv(mySock, numChoice, sizeof(numChoice), 0);
-    isPuTTY = validateBytes(numChoice);
+    isPuTTY = checkIfPuTTY(numChoice);
     if (isPuTTY) return -1;
     numChoice[1] = 0x00;
     
@@ -183,7 +226,7 @@ int validateMultipleChoiceInput(int mySock)
     return choice;
 }
 
-int validateBytes(char *inputString)
+int checkIfPuTTY(char *inputString)
 {
     // printf("[~] ");
     for (int i = 0; i < strlen(inputString); i++)
@@ -221,7 +264,7 @@ int validateBytes(char *inputString)
 int logMe(char *logme)
 { 
     char tmpLog[64];
-
+    printf("[~] TODO: log to file instead of stdout\n");
     strcpy(tmpLog, logme);
 
     return 0;
@@ -264,6 +307,9 @@ int perceptOne(int mySock)
         {          
             switch(choice)
             {
+                case -2:
+                    killSock(mySock);
+                    return 0;
                 case -1:
                     break;
                 case 1:
@@ -282,6 +328,7 @@ int perceptOne(int mySock)
                     return 0;
                 case 4:
                     printf("[+] Disconnect Selected\n");
+                    killSock(mySock);
                     return 0;
                 default:
                     send(mySock, invalidChoice, strlen(invalidChoice), 0);
@@ -322,6 +369,9 @@ int perceptTwo(int mySock)
         {          
             switch(choice)
             {
+                case -2:
+                    killSock(mySock);
+                    return 0;
                 case -1:
                     break;
                 case 1:
@@ -340,6 +390,7 @@ int perceptTwo(int mySock)
                     return 0;
                 case 4:
                     printf("[+] Disconnect Selected\n");
+                    killSock(mySock);
                     return 0;
                 default:
                     send(mySock, invalidChoice, strlen(invalidChoice), 0);
@@ -384,6 +435,9 @@ int perceptThree(int mySock)
         {          
             switch(choice)
             {
+                case -2:
+                    killSock(mySock);
+                    return 0;
                 case -1:
                     break;
                 case 1:
@@ -402,6 +456,7 @@ int perceptThree(int mySock)
                     return 0;
                 case 4:
                     printf("[+] Disconnect Selected\n");
+                    killSock(mySock);
                     return 0;
                 default:
                     send(mySock, invalidChoice, strlen(invalidChoice), 0);
@@ -432,7 +487,6 @@ int searchOffice(int mySock)
     
     srand((unsigned) time(&tme));
     perception = ((rand() % 3) + 1);
-    perception = 3;
     
     switch(perception)
     {
@@ -455,6 +509,92 @@ int searchOffice(int mySock)
             printf("[!] Perception is broken %d\n", perception);                
             return 0;
     }
+}
+
+int hackBLS(int mySock)
+{
+    int rndNum;
+    char hackAnswer[256];
+    char *butHow = ("\r\n\nInteresting Move. How would you do it?\n"
+                    "\r[>] ");
+    char *randOne = "\r\n\nYou attempt that but the network is too segmented!\n";
+    char *randTwo = ("\r\n\nThat method doesn't work here without the use of \n"
+                    "\rthe \"--do-forcefully\" flag. Rerun and try again.\n");
+    char *randThree = ("\r\n\nSegmentation fault (core dumped). Better luck next time.\n");
+    char *randFour = ("\r\n\nStack Trace: undefined result\n"
+                        "\r\t at bls-party (function: idontwannacry.cs:14)\n"
+                        "\r\t at bls-party (function: youmadcowbro.cs:45)\n"
+                        "\r\t at bls-party (function: styleguide-for-400.nist:800-63)\n");
+    char *randFive = ("\r\n\nUsername is not in the sudoers file. This incident will be reported.\n");
+    u_long bytesAvailable = 0;
+
+    send(mySock, butHow, strlen(butHow), 0);
+    
+    // recv(mySock, hackAnswer, strlen(hackAnswer), 0);
+    // if(checkIfPuTTY(hackAnswer))
+    // {
+    //     recv(mySock, hackAnswer, sizeof(hackAnswer), 0);
+    // }
+
+    bytesAvailable = sockTimeout(mySock);
+    
+    if(bytesAvailable == -2)
+    {
+        return 0;
+    }
+    recv(mySock, hackAnswer, sizeof(hackAnswer), 0);
+
+    if(checkIfPuTTY(hackAnswer))
+    {
+        bytesAvailable = sockTimeout(mySock);
+        if(bytesAvailable == -2)
+        {
+            return 0;
+        }
+        recv(mySock, hackAnswer, sizeof(hackAnswer), 0);
+    }
+
+    memset(hackAnswer, 0, sizeof(hackAnswer));
+
+    srand((unsigned) time(&tme));
+    rndNum = ((rand() % 5) + 1);
+
+    switch(rndNum)
+    {
+        case 1:
+            printf("[+] BLS Hack Option %d\n", rndNum);
+            send(mySock, randOne, strlen(randOne), 0);
+            break;
+        case 2:
+            printf("[+] BLS Hack Option %d\n", rndNum);
+            send(mySock, randTwo, strlen(randTwo), 0);
+            break;
+        case 3:
+            printf("[+] BLS Hack Option %d\n", rndNum);
+            send(mySock, randThree, strlen(randThree), 0);
+            break;
+        case 4:
+            printf("[+] BLS Hack Option %d\n", rndNum);
+            send(mySock, randFour, strlen(randFour), 0);
+            break;
+        case 5:
+            printf("[+] BLS Hack Option %d\n", rndNum);
+            send(mySock, randFive, strlen(randFive), 0);
+            break;
+        default:
+            printf("[!] BLS Hack Option Broken! (%d)", rndNum);
+            break;
+    }
+    
+    returnMainMenu(mySock);
+}
+
+int mrGrinch(int mySock)
+{
+    char *grinch = "\r\n\nYou're a mean one, Mr. Grinch!\n";
+
+    send(mySock, grinch, strlen(grinch), 0);
+    returnMainMenu(mySock);
 }
 
 int waterPlease(int mySock)
@@ -507,13 +647,25 @@ int orderAle(int mySock, char *characterName)
     char playerToast[1024];
     char output[2048];
     int choice;
+    u_long bytesAvailable = 0;
 
     send(mySock, proposeToast, strlen(proposeToast), 0);
     printf("[+] Sent \"proposeToast\"\n");
 
-    recv(mySock, playerToast, sizeof(playerToast), 0);
-    if(validateBytes(playerToast))
+    bytesAvailable = sockTimeout(mySock);
+    if(bytesAvailable == -2)
     {
+        return 0;
+    }
+    recv(mySock, playerToast, sizeof(playerToast), 0);
+
+    if(checkIfPuTTY(playerToast))
+    {
+        bytesAvailable = sockTimeout(mySock);
+        if(bytesAvailable == -2)
+        {
+            return 0;
+        }
         recv(mySock, playerToast, sizeof(playerToast), 0);
     }
     
@@ -550,13 +702,25 @@ int playGame(int mySock)
     char characterName[2048] = { "" };
     char output[2048];
     int choice;
+    u_long bytesAvailable = 0;
 
     send(mySock, enterYourName, strlen(enterYourName), 0);
     printf("[+] Sent \"Enter Your Name\"\n");
 
-    recv(mySock, characterName, sizeof(characterName), 0);
-    if(validateBytes(characterName))
+    bytesAvailable = sockTimeout(mySock);
+    if(bytesAvailable == -2)
     {
+        return 0;
+    }
+
+    recv(mySock, characterName, sizeof(characterName), 0);
+    if(checkIfPuTTY(characterName))
+    {
+        bytesAvailable = sockTimeout(mySock);
+        if(bytesAvailable == -2)
+        {
+            return 0;
+        }
         recv(mySock, characterName, sizeof(characterName), 0);
     }
 
@@ -572,6 +736,9 @@ int playGame(int mySock)
         {         
             switch(choice)
             {
+                case -2:
+                    killSock(mySock);
+                    return 0;
                 case -1:
                     break;
                 case 1:
@@ -592,10 +759,11 @@ int playGame(int mySock)
                     return 0;
                 case 5:
                     printf("[+] Choice 5 Selected\n");
+                    killSock(mySock);
                     return 0;
                 default:
                     send(mySock, invalidChoice, strlen(invalidChoice), 0);
-                    send(mySock, drinkOrder, strlen(drinkOrder), 0);
+                    send(mySock, output, strlen(output), 0);
                     printf("[+] Sent \"Invalid Choice & drinkOrder\"\n");                    
                     break;
             }
@@ -638,6 +806,9 @@ int storyMode(int mySock)
         {            
             switch(choice)
             {
+                case -2:
+                    killSock(mySock);
+                    return 0;
                 case -1:
                     break;
                 case 1:
@@ -652,10 +823,12 @@ int storyMode(int mySock)
                     return 0;
                 case 3:
                     printf("[+] Hack Black Lantern Security Selected\n");
+                    hackBLS(mySock);
                     killSock(mySock);
                     return 0;
                 case 4:
                     printf("[+] Turn off the Christmas Music Selected\n");
+                    mrGrinch(mySock);
                     killSock(mySock);
                     return 0;
                 case 5:                    
@@ -663,7 +836,8 @@ int storyMode(int mySock)
                     return 0;
                 default:
                     send(mySock, invalidChoice, strlen(invalidChoice), 0);
-                    printf("[+] Sent \"Invalid Choice\"\n");
+                    send(mySock, welcomeOptions, strlen(welcomeOptions), 0);
+                    printf("[+] Sent \"Invalid Choice and Welcome Options\"\n");
                     break;
             }
         }
