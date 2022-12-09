@@ -8,7 +8,7 @@ char *invalidChoice = "[!] Invalid Choice\n\n\r";
 time_t tme;
 
 int storyMode(int mySock);
-int checkIfPuTTY(char *inputString);
+// int checkIfPuTTY(char *inputString);
 int killSock(int mySock);
 int validateMultipleChoiceInput(int mySock);
 int returnMainMenu(int mySock);
@@ -30,10 +30,13 @@ int printKey()
 
     char *banner = "\r\n============= BLS CTF KEY ============\n\r";
     char *tryAgain = "\rPeform this same overflow on the server to find the key!\n";
-    char output[128];
+    char *contantInfo = "\rContact @stryker2k2 on Twitter to get the server IP!\n";
+    char *keyExample = "\rThe key will look like BLS-CTF{Ex4mple_K3y} !\n";
+    char output[1024];
     char key[44];
     int counter = 0;
     char ch;
+    int cp = 1;
 
     send(sockHandle, banner, strlen(banner), 0);
 
@@ -41,16 +44,20 @@ int printKey()
     if (keyFile == NULL)
     {
         send(sockHandle, tryAgain, strlen(tryAgain), 0);
+        send(sockHandle, contantInfo, strlen(contantInfo), 0);
+        send(sockHandle, keyExample, strlen(keyExample), 0);
     }
+    else
+    {
+        fgets(key, sizeof(key), keyFile);
 
-    fgets(key, sizeof(key), keyFile);
-    sprintf(output, "\r%s\n\n", key);
-    send(sockHandle, output, strlen(output), 0);
+        sprintf(output, "\r%s\n\n", key);
+        send(sockHandle, output, strlen(output), 0);
 
-    Sleep(500);
+        fclose(keyFile);
+    }    
 
-    fclose(keyFile);
-
+    Sleep(1000);
     killSock(sockHandle);
 
     return 0;
@@ -142,7 +149,7 @@ int emptyBuffer(int mySock)
     char trash[1024];
     int bytesRcvd = 0;
     u_long bytesAvailable = 0;
-    int isPuTTY = 0;
+    // int isPuTTY = 0;
 
     ioctlsocket(mySock, FIONREAD, &bytesAvailable);
 
@@ -151,7 +158,7 @@ int emptyBuffer(int mySock)
         do 
         {
             bytesRcvd = recv(mySock, trash, sizeof(trash), 0);
-            isPuTTY = checkIfPuTTY(trash);
+            //isPuTTY = checkIfPuTTY(trash);
             
             printf("[~] Deleting the excess trash of %d bytes\n", bytesRcvd);
 
@@ -165,10 +172,10 @@ int emptyBuffer(int mySock)
     }
     
 
-    if (isPuTTY == TRUE)
-    {
-        return TRUE;
-    }
+    // if (isPuTTY == TRUE)
+    // {
+    //     return TRUE;
+    // }
 
     return 0;
 }
@@ -179,7 +186,7 @@ int validateMultipleChoiceInput(int mySock)
     char *end;
     char numChoice[2];
     int choice;
-    int isPuTTY = 0;
+    // int isPuTTY = 0;
 
     memset(numChoice, 0, sizeof(numChoice));
     
@@ -188,20 +195,18 @@ int validateMultipleChoiceInput(int mySock)
     //     ioctlsocket(mySock, FIONREAD, &bytesAvailable);            
     // } while (!bytesAvailable);
 
-    bytesAvailable = sockTimeout(mySock);
-    if(bytesAvailable == -2)
+    if (sockTimeout(mySock) == -2)
     {
         return -2;
     }
-
     if (bytesAvailable > 2)
     {
-        isPuTTY = emptyBuffer(mySock);
-        if (isPuTTY)
-        {
-            bytesAvailable = 0;
-            return -1;
-        }
+        // isPuTTY = emptyBuffer(mySock);
+        // if (isPuTTY)
+        // {
+        //     bytesAvailable = 0;
+        //     return -1;
+        // }
         send(mySock, invalidChoice, strlen(invalidChoice), 0);
         printf("[+] Sent \"Invalid Choice\"\n\r");
 
@@ -209,8 +214,8 @@ int validateMultipleChoiceInput(int mySock)
     }
     
     recv(mySock, numChoice, sizeof(numChoice), 0);
-    isPuTTY = checkIfPuTTY(numChoice);
-    if (isPuTTY) return -1;
+    // isPuTTY = checkIfPuTTY(numChoice);
+    // if (isPuTTY) return -1;
     numChoice[1] = 0x00;
     
     choice = (int)strtol(numChoice, &end, 10);
@@ -226,39 +231,36 @@ int validateMultipleChoiceInput(int mySock)
     return choice;
 }
 
-int checkIfPuTTY(char *inputString)
-{
-    // printf("[~] ");
-    for (int i = 0; i < strlen(inputString); i++)
-    {
-        if ((BYTE)inputString[i] == 0x0d)
-        {
-            if ((BYTE)inputString[i+1] == 0x0a)
-            {
-                printf("PuTTY (0x0d, 0x0a)\n");
-                return 1;
-            }
-        }
-
-        else if ((BYTE)inputString[i] == 0xff)
-        {
-            if ((BYTE)inputString[i+1] == 0xfb)
-            {
-                printf("PuTTY (0xff, 0xfb)\n");
-                return 1;
-            }
-        }
-
-        else
-        {
-            // printf("\n");
-            // printf("\\x%02x ", inputString[i]);
-            return 0;
-        }
-    }
-
-    return 0;
-}
+// int checkIfPuTTY(char *inputString)
+// {
+//     // printf("[~] ");
+//     for (int i = 0; i < strlen(inputString); i++)
+//     {
+//         if ((BYTE)inputString[i] == 0x0d)
+//         {
+//             if ((BYTE)inputString[i+1] == 0x0a)
+//             {
+//                 printf("PuTTY (0x0d, 0x0a)\n");
+//                 return 1;
+//             }
+//         }
+//         else if ((BYTE)inputString[i] == 0xff)
+//         {
+//             if ((BYTE)inputString[i+1] == 0xfb)
+//             {
+//                 printf("PuTTY (0xff, 0xfb)\n");
+//                 return 1;
+//             }
+//         }
+//         else
+//         {
+//             // printf("\n");
+//             // printf("\\x%02x ", inputString[i]);
+//             return 0;
+//         }
+//     }
+//     return 0;
+// }
 
 /* TODO: Create logging function */
 int logMe(char *logme)
@@ -536,23 +538,21 @@ int hackBLS(int mySock)
     //     recv(mySock, hackAnswer, sizeof(hackAnswer), 0);
     // }
 
-    bytesAvailable = sockTimeout(mySock);
-    
-    if(bytesAvailable == -2)
+    if (sockTimeout(mySock) == -2)
     {
         return 0;
     }
     recv(mySock, hackAnswer, sizeof(hackAnswer), 0);
 
-    if(checkIfPuTTY(hackAnswer))
-    {
-        bytesAvailable = sockTimeout(mySock);
-        if(bytesAvailable == -2)
-        {
-            return 0;
-        }
-        recv(mySock, hackAnswer, sizeof(hackAnswer), 0);
-    }
+    // if(checkIfPuTTY(hackAnswer))
+    // {
+    //     bytesAvailable = sockTimeout(mySock);
+    //     if(bytesAvailable == -2)
+    //     {
+    //         return 0;
+    //     }
+    //     recv(mySock, hackAnswer, sizeof(hackAnswer), 0);
+    // }
 
     memset(hackAnswer, 0, sizeof(hackAnswer));
 
@@ -652,29 +652,29 @@ int orderAle(int mySock, char *characterName)
     send(mySock, proposeToast, strlen(proposeToast), 0);
     printf("[+] Sent \"proposeToast\"\n");
 
-    bytesAvailable = sockTimeout(mySock);
-    if(bytesAvailable == -2)
+    if (sockTimeout(mySock) == -2)
     {
         return 0;
     }
+
     recv(mySock, playerToast, sizeof(playerToast), 0);
 
-    if(checkIfPuTTY(playerToast))
-    {
-        bytesAvailable = sockTimeout(mySock);
-        if(bytesAvailable == -2)
-        {
-            return 0;
-        }
-        recv(mySock, playerToast, sizeof(playerToast), 0);
-    }
+    // if(checkIfPuTTY(playerToast))
+    // {
+    //     bytesAvailable = sockTimeout(mySock);
+    //     if(bytesAvailable == -2)
+    //     {
+    //         return 0;
+    //     }
+    //     recv(mySock, playerToast, sizeof(playerToast), 0);
+    // }
     
     logMe(playerToast);
 
     addNullTerminator(playerToast);
     addNullTerminator(characterName);
 
-    snprintf(output, sizeof(output), toastProposed, characterName, playerToast, characterName);
+    snprintf(output, sizeof(output), toastProposed, characterName, playerToast, playerToast);
     send(mySock, output, strlen(output), 0);
 
     returnMainMenu(mySock);
@@ -707,25 +707,24 @@ int playGame(int mySock)
     send(mySock, enterYourName, strlen(enterYourName), 0);
     printf("[+] Sent \"Enter Your Name\"\n");
 
-    bytesAvailable = sockTimeout(mySock);
-    if(bytesAvailable == -2)
+    if (sockTimeout(mySock) == -2)
     {
         return 0;
     }
 
     recv(mySock, characterName, sizeof(characterName), 0);
-    if(checkIfPuTTY(characterName))
-    {
-        bytesAvailable = sockTimeout(mySock);
-        if(bytesAvailable == -2)
-        {
-            return 0;
-        }
-        recv(mySock, characterName, sizeof(characterName), 0);
-    }
+    // if(checkIfPuTTY(characterName))
+    // {
+    //     bytesAvailable = sockTimeout(mySock);
+    //     if(bytesAvailable == -2)
+    //     {
+    //         return 0;
+    //     }
+    //     recv(mySock, characterName, sizeof(characterName), 0);
+    // }
 
     addNullTerminator(characterName);
-    snprintf(output, sizeof(output), drinkOrder, characterName);    
+    snprintf(output, sizeof(output), drinkOrder, characterName);
 
     while (TRUE)
     {
@@ -781,7 +780,8 @@ int storyMode(int mySock)
     int choice;
 
     /* Read from New Connection */
-    char *welcome = ("\n\n*** Welcome to the Black Lantern Christmas Party! ***\n\n"
+    char *welcome = ("\n\n*** Welcome to the Black Lantern Christmas Party! ***\n"
+                    "\r Disclaimer: Connecting with PuTTY is NOT supported! \n\n"
                     "\rYou walk into the Black Lantern Christmas Party at the \n"
                     "\roffice and you see a laptop open with a game running.\n"
                     "\rWhat do you do?\n\r");
@@ -904,7 +904,8 @@ int main(int argc, char *argv[])
     while (TRUE)
     {
         /* Accept Connection */
-        printf("[+] You can connect to the server using \"ncat localhost 379\"\n");
+        printf("[!] WARNING: Connecting with PuTTY is NOT SUPPORTED (seriously)\n");
+        printf("[+] You can connect to the server using \"ncat localhost 379\"\n");        
         printf("[+] Listening for Connection...\n");
         addrlen = sizeof(address);
         if ((new_sock = accept(server_fd, (struct sockaddr*) &address, &addrlen)) == INVALID_SOCKET)
