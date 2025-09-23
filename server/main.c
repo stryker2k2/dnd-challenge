@@ -1,7 +1,4 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <winsock2.h>
-#include <time.h>
+#include "main.h"
 
 int sockHandle;
 char *invalidChoice = "[!] Invalid Choice\n\n\r";
@@ -40,7 +37,11 @@ int printKey()
 
     send(sockHandle, banner, strlen(banner), 0);
 
+#ifdef _WIN32
     keyFile = fopen("C:\\key.txt", "r");
+#else
+    keyFile = fopen("key.txt", "r");
+#endif
     if (keyFile == NULL)
     {
         send(sockHandle, tryAgain, strlen(tryAgain), 0);
@@ -57,7 +58,7 @@ int printKey()
         fclose(keyFile);
     }    
 
-    Sleep(1000);
+    sleep(1);
     killSock(sockHandle);
 
     return 0;
@@ -71,30 +72,46 @@ int killSock(int mySock)
     send(mySock, connectionTerminated, strlen(connectionTerminated), 0);
     printf("[+] Connection Terminated\n");
 
-    Sleep(1);
+    sleep(1);
+#ifdef _WIN32
     shutdown(mySock, SD_BOTH);
     closesocket(mySock);
+#else
+    shutdown(mySock, SHUT_RDWR);
+    close(mySock);
+#endif
 }
 
 int sockTimeout(int mySock)
 {
     char *timeout = ("\r\n\n*** Your session has timed out ***\n");
-    u_long bytesAvailable = 0;    
+    uint32_t bytesAvailable = 0;    
     clock_t startTime, current;
 
     startTime = clock();
 
     do
     {
-        ioctlsocket(mySock, FIONREAD, &bytesAvailable);    
+#ifdef _WIN32
+        if (ioctlsocket(mySock, FIONREAD, (u_long*)&bytesAvailable) == -1) {
+            perror("[-] IoCTL failure\n");
+            exit(EXIT_FAILURE);
+        }
+#else
+        if (ioctl(mySock, FIONREAD, &bytesAvailable) == -1) {
+            perror("[-] IoCTL failure\n");
+            exit(EXIT_FAILURE);
+        }
+#endif
+
         current = clock();
         if (((current - startTime) / CLOCKS_PER_SEC) > 30.0)
         {
             printf("[!] User session has timed out\n");
             send(mySock, timeout, strlen(timeout), 0);
-            Sleep(1000);
+            sleep(1);
             killSock(mySock);
-            Sleep(1000);            
+            sleep(1);            
             return -2;
         }
 
@@ -148,10 +165,14 @@ int emptyBuffer(int mySock)
 {     
     char trash[1024];
     int bytesRcvd = 0;
-    u_long bytesAvailable = 0;
+    uint32_t bytesAvailable = 0;
     // int isPuTTY = 0;
 
-    ioctlsocket(mySock, FIONREAD, &bytesAvailable);
+#ifdef _WIN32
+    ioctlsocket(mySock, FIONREAD, (u_long*)&bytesAvailable);
+#else
+    ioctl(mySock, FIONREAD, &bytesAvailable);
+#endif
 
     if (bytesAvailable)
     {
@@ -182,7 +203,7 @@ int emptyBuffer(int mySock)
 
 int validateMultipleChoiceInput(int mySock)
 {
-    u_long bytesAvailable = 0;
+    uint32_t bytesAvailable = 0;
     char *end;
     char numChoice[2];
     int choice;
@@ -528,7 +549,7 @@ int hackBLS(int mySock)
                         "\r\t at bls-party (function: youmadcowbro.cs:45)\n"
                         "\r\t at bls-party (function: styleguide-for-400.nist:800-63)\n");
     char *randFive = ("\r\n\nUsername is not in the sudoers file. This incident will be reported.\n");
-    u_long bytesAvailable = 0;
+    uint32_t bytesAvailable = 0;
 
     send(mySock, butHow, strlen(butHow), 0);
     
@@ -647,7 +668,7 @@ int orderAle(int mySock, char *characterName)
     char playerToast[1024];
     char output[2048];
     int choice;
-    u_long bytesAvailable = 0;
+    uint32_t bytesAvailable = 0;
 
     send(mySock, proposeToast, strlen(proposeToast), 0);
     printf("[+] Sent \"proposeToast\"\n");
@@ -702,7 +723,7 @@ int playGame(int mySock)
     char characterName[2048] = { "" };
     char output[2048];
     int choice;
-    u_long bytesAvailable = 0;
+    uint32_t bytesAvailable = 0;
 
     send(mySock, enterYourName, strlen(enterYourName), 0);
     printf("[+] Sent \"Enter Your Name\"\n");
@@ -851,13 +872,12 @@ int storyMode(int mySock)
 
 int main(int argc, char *argv[])
 {
-    WORD wVersionRequested;
-    WSADATA wsaData;
-    DWORD port = 379;
+    uint16_t wVersionRequested;
+    uint32_t port = 379;
     struct sockaddr_in address;
     int server_fd, new_sock, addrlen;
     
-    int opt = 0;
+    uint32_t opt = 0;
     char *ip;
      
     /* IPv4 Setup */
@@ -865,37 +885,40 @@ int main(int argc, char *argv[])
     address.sin_addr.s_addr = INADDR_ANY;
     address.sin_port = htons(port);
 
+#ifdef _WIN32
     /* WSA Startup */
+    WSADATA wsaData;
     wVersionRequested = MAKEWORD(2, 2);
     if (WSAStartup(wVersionRequested, &wsaData) != 0)
     {
-        perror("[-] WSAStartup failure");
+        perror("[-] WSAStartup failure\n");
         exit(EXIT_FAILURE);
-    }    
+    }
+#endif
     
     /* Initiate Socket */
-    if ((server_fd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) == INVALID_SOCKET)
+    if ((server_fd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) == -1)
     {
         perror("[-] Socket failure");
         exit(EXIT_FAILURE);
     }
 
     /* Set Socket Options */
-    if (setsockopt(server_fd, SOL_SOCKET, SO_KEEPALIVE, (char *) &opt, sizeof(int)) == SOCKET_ERROR)
+    if (setsockopt(server_fd, SOL_SOCKET, SO_KEEPALIVE, (char *) &opt, sizeof(int)) == -1)
     {
         perror("[-] Set Socket Opt failure");
         exit(EXIT_FAILURE);
     }
 
     /* Bind Socket to local IP Address and Port */
-    if (bind(server_fd, (struct sockaddr*) &address, sizeof(address)) == SOCKET_ERROR)
+    if (bind(server_fd, (struct sockaddr*) &address, sizeof(address)) == -1)
     {
         perror("[-] Bind Socket failure");
         exit(EXIT_FAILURE);
     }
 
     /* Start Listener */
-    if (listen(server_fd, 3) == SOCKET_ERROR)
+    if (listen(server_fd, 3) == -1)
     {
         perror("[-] Listen Socket failure");
         exit(EXIT_FAILURE);
@@ -908,7 +931,7 @@ int main(int argc, char *argv[])
         printf("[+] You can connect to the server using \"ncat localhost 379\"\n");        
         printf("[+] Listening for Connection...\n");
         addrlen = sizeof(address);
-        if ((new_sock = accept(server_fd, (struct sockaddr*) &address, &addrlen)) == INVALID_SOCKET)
+        if ((new_sock = accept(server_fd, (struct sockaddr*) &address, &addrlen)) == -1)
         {
             perror("[-] Accept Socket failure");
             exit(EXIT_FAILURE);
@@ -917,6 +940,8 @@ int main(int argc, char *argv[])
         sockHandle = new_sock;
         storyMode(new_sock);
         
+        
+#ifdef _WIN32
         /* Cleanup */
         shutdown(new_sock, SD_BOTH);
         closesocket(new_sock);
@@ -925,6 +950,15 @@ int main(int argc, char *argv[])
     shutdown(server_fd, SD_BOTH);
     closesocket(server_fd);
     WSACleanup();
+#else
+        /* Cleanup */
+        shutdown(new_sock, SHUT_RDWR);
+        close(new_sock);
+    }
+
+    shutdown(server_fd, SHUT_RDWR);
+    close(server_fd);
+#endif
 
     return 0;
 }

@@ -76,9 +76,13 @@ while len(decoded) != 0:
     try:
         data = s.recv(4096)
         decoded = data.decode()
-        print(decoded)
+        if decoded:
+            print(decoded)
+        else:
+            print("[!] Server Segmentation Fault: Connection Terminated")
     except:
         data = 0
         decoded = ""
+        print("[!] Server Segmentation Fault: Connection Terminated")
 
 s.close()
