@@ -1,0 +1,5 @@
+logMe
+0x080498ff
+
+printKey
+0x0804937a
