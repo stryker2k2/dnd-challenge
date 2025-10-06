@@ -1,4 +1,4 @@
-#include "main.h"
+#include "bls.h"
 
 int sockHandle;
 char *invalidChoice = "[!] Invalid Choice\n\n\r";
