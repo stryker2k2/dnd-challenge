@@ -26,7 +26,7 @@ int printKey()
 
     char *banner = "\r\n============= DEFCON CTF KEY ============\n\r";
     char *tryAgain = "\rPeform this same overflow on the server to find the key!\n";
-    char *contantInfo = "\rContact @stryker2k2 on Twitter to get the server IP!\n";
+    char *contantInfo = "\rNavigate to https://ctf.strykersoft.local to get the server IP!\n";
     char *keyExample = "\rThe key will look like DEFCON-CTF{Ex4mple_K3y} !\n";
     char output[1024];
     char key[64];

@@ -38,7 +38,7 @@ DEFCON_SOURCES = $(defcon_version).c $(defcon_version).h
 CFLAGS = -no-pie -O0 -Wno-format-truncation -fno-stack-protector
 
 # PHONY TARGETS
-.PHONY: all clean run bls defcon
+.PHONY: all clean run bls defcon service
 
 # make bls
 $(BLS_EXEC): $(BLS_SOURCES)
@@ -48,12 +48,16 @@ $(BLS_EXEC): $(BLS_SOURCES)
 $(DEFCON_EXEC): $(DEFCON_SOURCES)
 	$(COMPILE_CMD) $(DEFCON_SOURCES) -o ./output/$(DEFCON_EXEC) $(CFLAGS) $(OS_CFLAGS)
 
+service:
+	$(COMPILE_CMD) service.c -o ./output/service
+
 # make all
-all: bls defcon
+all: bls defcon service
 
 # make clean
 clean:
 	rm ./output/* || echo 'No Files to Delete. Continuing...'
+	rm log.txt
 
 # make run VERSION=<version>
 run: $(VERSION)
