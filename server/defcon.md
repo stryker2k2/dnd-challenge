@@ -121,7 +121,7 @@ What do you do?
 
             [>] Return to Main Menu or Disconnect
 
-        [2] Stealthily turn the GOONS' "Information Desk" into a "Free Compliments" kiosk
+        [2] Stealthily turn the "Information Desk" into a "Free Compliments" kiosk
 
             With amazing stealth and finesse, you glide through the halls, using your 
             your technical knowledge to perfectly align the rare, decorative stickers 

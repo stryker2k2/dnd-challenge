@@ -3,6 +3,7 @@
 int sockHandle;
 char *invalidChoice = "[!] Invalid Choice\n\n\r";
 time_t tme;
+double sockTO = 60;
 
 int storyMode(int mySock);
 int killSock(int mySock);
@@ -104,7 +105,7 @@ int sockTimeout(int mySock)
 #endif
 
         current = clock();
-        if (((current - startTime) / CLOCKS_PER_SEC) > 30.0)
+        if (((current - startTime) / CLOCKS_PER_SEC) > sockTO)
         {
             printf("[!] User session has timed out\n");
             send(mySock, timeout, strlen(timeout), 0);
@@ -352,7 +353,7 @@ int perceptThree(int mySock)
     int choice;
     char *pThreeOptions = ("\rWhat shall you do now?\n"
                         "\r[1] Immediately start sticking the stickers onto the GOONS' official badges\n"
-                        "\r[2] Stealthily turn the GOONS' 'Information Desk' into a 'Free Compliments' kiosk.\n"
+                        "\r[2] Stealthily turn the 'Information Desk' into a 'Free Compliments' kiosk.\n"
                         "\r[3] Return to Main Menu\n"
                         "\r[4] Terminate Connection\n\n"
                         "\r[>] ");

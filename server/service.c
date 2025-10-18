@@ -8,7 +8,7 @@
 
 #define TRUE 1
 
-int is_server(const char *pid_str) {
+int is_ctf_exec(const char *pid_str) {
     char path[1024];
     char name[256];
     FILE *fp;
@@ -52,6 +52,10 @@ int main() {
     struct dirent *entry;
     const char *full_path = "/home/jack/repo/dnd-challenge/server/output/defcon";
 
+    printf("\n**************************************************************\n"
+            "\r**  This service will look to see if the CTF Executable is  **\n"
+            "\r**  in the Process List and will launch it if not found.    **\n"
+            "\r**************************************************************\n\n");
 
     while(TRUE)
     {
@@ -75,10 +79,9 @@ int main() {
                     }
                 }
                 if (is_pid) {
-                    result = is_server(entry->d_name);
+                    result = is_ctf_exec(entry->d_name);
                     if (result)
                     {
-                        printf("PID: %s, Process Name: %s\n", entry->d_name, "defcon");
                         break;
                     }
                 }
@@ -106,7 +109,6 @@ int main() {
                     perror("execl failed");
                     exit(EXIT_FAILURE);
                 }
-                printf("[+] Success!");
             }
 
             else
