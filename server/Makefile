@@ -4,27 +4,41 @@ GCC32 := gcc -m32
 bls_version = bls
 defcon_version = defcon
 
+VERSION ?= defcon
+
 # OS VERSION
 ifeq ($(OS),Windows_NT)
 	BLS_EXEC = $(bls_version).exe
 	DEFCON_EXEC = $(defcon_version).exe
 	COMPILE_CMD = $(MINGW32)
 
-	# Windows needs WinSock2
+    # Windows needs WinSock2
 	OS_CFLAGS = -lws2_32
 else
 	BLS_EXEC = $(bls_version)
 	DEFCON_EXEC = $(defcon_version)
 	COMPILE_CMD = $(GCC32)
 
-	# Blank for Linux
+    # Blank for Linux
 	OS_CFLAGS =
+endif
+
+# Check BLS or DEFCON Version
+ifeq ($(VERSION),bls)
+    # BLS Version
+    RUN_EXEC_VAR = $(BLS_EXEC)
+else
+    # DEFCON Version
+    RUN_EXEC_VAR = $(DEFCON_EXEC)
 endif
 
 # SOURCES
 BLS_SOURCES = $(bls_version).c $(bls_version).h
 DEFCON_SOURCES = $(defcon_version).c $(defcon_version).h
 CFLAGS = -no-pie -O0 -Wno-format-truncation -fno-stack-protector
+
+# PHONY TARGETS
+.PHONY: all clean run bls defcon
 
 # make bls
 $(BLS_EXEC): $(BLS_SOURCES)
@@ -41,6 +55,7 @@ all: bls defcon
 clean:
 	rm ./output/* || echo 'No Files to Delete. Continuing...'
 
-# make run
-run:
-	./output/$(defcon_version)
+# make run VERSION=<version>
+run: $(VERSION)
+	@echo "--- Running D&D Version: $(VERSION) (./output/$(RUN_EXEC_VAR)) ---"
+	./output/$(RUN_EXEC_VAR)

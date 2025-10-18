@@ -24,10 +24,10 @@ int printKey()
 {
     FILE *keyFile;
 
-    char *banner = "\r\n============= BLS CTF KEY ============\n\r";
+    char *banner = "\r\n============= DEFCON CTF KEY ============\n\r";
     char *tryAgain = "\rPeform this same overflow on the server to find the key!\n";
     char *contantInfo = "\rContact @stryker2k2 on Twitter to get the server IP!\n";
-    char *keyExample = "\rThe key will look like BLS-CTF{Ex4mple_K3y} !\n";
+    char *keyExample = "\rThe key will look like DEFCON-CTF{Ex4mple_K3y} !\n";
     char output[1024];
     char key[64];
     int counter = 0;
@@ -351,25 +351,24 @@ int perceptThree(int mySock)
 {
     int choice;
     char *pThreeOptions = ("\rWhat shall you do now?\n"
-                        "\r[1] Grab the Nerf Gun and go hunting for the BLS Owners\n"
-                        "\r[2] Set up a Nerf Land Mine near the Nerf Machine Gun\n"
+                        "\r[1] Immediately start sticking the stickers onto the GOONS' official badges\n"
+                        "\r[2] Stealthily turn the GOONS' 'Information Desk' into a 'Free Compliments' kiosk.\n"
                         "\r[3] Return to Main Menu\n"
                         "\r[4] Terminate Connection\n\n"
                         "\r[>] ");
 
-    char *pThreeOptOne = ("\r\n\nYou quickly grab the Nerf Nemesis Machine Gun with both \n"
-                            "\rhands and sprint into the nearest Owner's office screaming \n"
-                            "\r\"MEET MY LITTLE FRIEND\" at the top of your lungs. But, \n"
-                            "\rinstead of a surprise attack - you walk into an ambush. All the \n"
-                            "\rOwners unleash Nerf Fury upon you as you walk into the door.\n");
+    char *pThreeOptOne = ("\r\n\nYou quickly grab a handful of stickers and rush the nearest group of \n"
+                            "\rGOONS, slapping stickers onto their badges! You initially catch two  \n"
+                            "\rGOONS by surprise! However, the third GOON side-steps your attempt  \n"
+                            "\rand then slaps a giant, embarrassing 'I <3 WINDOWS' sticker  \n"
+                            "\rright onto your forehead. You realize you have been out-pranked.\n");
 
-    char *pThreeOptTwo = ("\r\n\nWith amazing skill and finesse, you set up the Nerf Land \n"
-                            "\rMine positioned perfect near the Nerf Nemesis Machine \n"
-                            "\rGun and lie patiently in the other room with the remote \n"
-                            "\rdetonator. One of the Owners walk towards it with delight \n"
-                            "\rin their eyes! As you press the Remote Detonator, you \n"
-                            "\rquickly remember that \"This Side Towards Enemy\" was \n"
-                            "\rfacing you! You get pelted by your own Nerf Land Mine!\n");
+    char *pThreeOptTwo = ("\r\n\nWith amazing stealth and finesse, you glide through the halls, using your  \n"
+                            "\ryour technical knowledge to perfectly align the rare, decorative stickers  \n"
+                            "\rover the 'Information Desk' text on their sign. You then quickly scribble  \n"
+                            "\r'Free Compliments Kiosk' on their whiteboard and stealthly sneak away.\n"
+                            "\rMoments later, you watch as a bewildered G00N sits down at the desk,  \n"
+                            "\rforced to dole out awkward compliments to every attendee who walks up! \n");
     
     while (TRUE)
     {
@@ -418,17 +417,18 @@ int searchOffice(int mySock)
     int choice;
     int perception = 0;
 
-    char *perceptionOne = ("\r\n\nYou roll the three-sided dice and the number \"1\" is facing\n"
+    char *perceptionOne = ("\r\n\nYou roll the three-sided dice and the number \"1\" is facing \n"
                             "\rup. Your critical lack of perception focuses on the \n"
                             "\rfirst thing you see - a ping pong table.\n");
 
     char *perceptionTwo = ("\r\n\nYou roll the three-sided dice and the number \"2\" is \n"
                             "\rfacing up. Your average amount of perception notices a \n"
-                            "\rfancy coffee machine in the break room.\n");
+                            "\rfancy coffee machine near the Village Entrance.\n");
 
-    char *perceptionThree = ("\r\n\nYou roll the three-sided dice and the number \"3\" is \n"
-                            "\rfacing up. Your exceptional perception notices a Rival \n"
-                            "\rNemesis MXVII-10K NERF GUN on the conference table!\n");
+    char *perceptionThree = ("\r\n\nYou roll the three-sided dice and the number 3 is \n"
+                            "\rfacing up. Your exceptional perception notices a stack of exclusive, \n"
+                            "\rdecorative, 'DEFCON GOON' stickers near the GOONS' command center!  \n"
+                            "\rThis is the perfect opportunity for some light-hearted chaos.\n");
     
     srand((unsigned) time(&tme));
     perception = ((rand() % 3) + 1);
@@ -456,7 +456,7 @@ int searchOffice(int mySock)
     }
 }
 
-int hackBLS(int mySock)
+int hackDEFCON(int mySock)
 {
     int rndNum;
     char hackAnswer[256];
@@ -467,9 +467,9 @@ int hackBLS(int mySock)
                     "\rthe \"--do-forcefully\" flag. Rerun and try again.\n");
     char *randThree = ("\r\n\nSegmentation fault (core dumped). Better luck next time.\n");
     char *randFour = ("\r\n\nStack Trace: undefined result\n"
-                        "\r\t at bls-party (function: idontwannacry.cs:14)\n"
-                        "\r\t at bls-party (function: youmadcowbro.cs:45)\n"
-                        "\r\t at bls-party (function: styleguide-for-400.nist:800-63)\n");
+                        "\r\t at defcon-party (function: idontwannacry.cs:14)\n"
+                        "\r\t at defcon-party (function: youmadcowbro.cs:45)\n"
+                        "\r\t at defcon-party (function: styleguide-for-400.nist:800-63)\n");
     char *randFive = ("\r\n\nUsername is not in the sudoers file. This incident will be reported.\n");
     uint32_t bytesAvailable = 0;
 
@@ -489,38 +489,38 @@ int hackBLS(int mySock)
     switch(rndNum)
     {
         case 1:
-            printf("[+] BLS Hack Option %d\n", rndNum);
+            printf("[+] DEFCON Hack Option %d\n", rndNum);
             send(mySock, randOne, strlen(randOne), 0);
             break;
         case 2:
-            printf("[+] BLS Hack Option %d\n", rndNum);
+            printf("[+] DEFCON Hack Option %d\n", rndNum);
             send(mySock, randTwo, strlen(randTwo), 0);
             break;
         case 3:
-            printf("[+] BLS Hack Option %d\n", rndNum);
+            printf("[+] DEFCON Hack Option %d\n", rndNum);
             send(mySock, randThree, strlen(randThree), 0);
             break;
         case 4:
-            printf("[+] BLS Hack Option %d\n", rndNum);
+            printf("[+] DEFCON Hack Option %d\n", rndNum);
             send(mySock, randFour, strlen(randFour), 0);
             break;
         case 5:
-            printf("[+] BLS Hack Option %d\n", rndNum);
+            printf("[+] DEFCON Hack Option %d\n", rndNum);
             send(mySock, randFive, strlen(randFive), 0);
             break;
         default:
-            printf("[!] BLS Hack Option Broken! (%d)", rndNum);
+            printf("[!] DEFCON Hack Option Broken! (%d)", rndNum);
             break;
     }
     
     returnMainMenu(mySock);
 }
 
-int mrGrinch(int mySock)
+int saboteur(int mySock)
 {
-    char *grinch = "\r\n\nYou're a mean one, Mr. Grinch!\n";
+    char *sabatage = "\r\n\nDon't Firewall my Vibes, Chillout Saboteur!\n";
 
-    send(mySock, grinch, strlen(grinch), 0);
+    send(mySock, sabatage, strlen(sabatage), 0);
     returnMainMenu(mySock);
 }
 
@@ -690,15 +690,15 @@ int storyMode(int mySock)
     /* Read from New Connection */
     char *welcome = ("\n\n*** Welcome to the Black Lantern Christmas Party! ***\n"
                     "\r Disclaimer: Connecting with PuTTY is NOT supported! \n\n"
-                    "\rYou walk into the DEFCON 34 Village and notice a sea\n\r"
+                    "\rYou walk into the DEFCON Village and notice an ocean\n\r"
                     "\rof hackers sitting around tables with their laptops.\n\r"
                     "\rYou notice one table by itself with a lone laptop on\n\r"
                     "\rdisplay with a text-based game running.\n\r"
                     "\rWhat do you do?\n\n\r");
     char *welcomeOptions = ("\r[1] Play the game\n\r"
-                    "\r[2] Search the office (Roll a 3-sided dice for Perception)\n"
-                    "\r[3] Hack Black Lantern Security\n\r"
-                    "\r[4] Turn off the Christmas Music\n\r"
+                    "\r[2] Search the Village (Roll a 3-sided dice for Perception)\n"
+                    "\r[3] Hack the DEFCON Main Frame\n\r"
+                    "\r[4] Convince SomaFM to turn off the Music in the Chillout Room\n\r"
                     "\r[5] Terminate Connection\n\n\r"
                     "\r[>] ");
     char *doneMessage = "[+] Program Complete\n\n\r";
@@ -726,18 +726,18 @@ int storyMode(int mySock)
                     killSock(mySock);
                     return 0;
                 case 2:
-                    printf("[+] Search the Office Selected\n");
+                    printf("[+] Search the Village Selected\n");
                     searchOffice(mySock);
                     killSock(mySock);
                     return 0;
                 case 3:
-                    printf("[+] Hack Black Lantern Security Selected\n");
-                    hackBLS(mySock);
+                    printf("[+] Hack DEFCON Main Frame Selected\n");
+                    hackDEFCON(mySock);
                     killSock(mySock);
                     return 0;
                 case 4:
-                    printf("[+] Turn off the Christmas Music Selected\n");
-                    mrGrinch(mySock);
+                    printf("[+] Turn off SonaFM Selected\n");
+                    saboteur(mySock);
                     killSock(mySock);
                     return 0;
                 case 5:                    
@@ -765,7 +765,7 @@ int main(int argc, char *argv[])
     struct sockaddr_in address;
     int server_fd, new_sock, addrlen;
     
-    uint32_t opt = 0;
+    uint32_t opt = 1;
     char *ip;
      
     /* IPv4 Setup */
@@ -791,10 +791,17 @@ int main(int argc, char *argv[])
         exit(EXIT_FAILURE);
     }
 
-    /* Set Socket Options */
+    /* Set Socket Reuse Address Option */
+    if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR, (char *) &opt, sizeof(int)) == -1)
+    {
+        perror("[-] Set Socket Opt failure: SO_REUSEADDR");
+        exit(EXIT_FAILURE);
+    }
+
+    /* Set Socket Keep Alive Option */
     if (setsockopt(server_fd, SOL_SOCKET, SO_KEEPALIVE, (char *) &opt, sizeof(int)) == -1)
     {
-        perror("[-] Set Socket Opt failure");
+        perror("[-] Set Socket Opt failure: SO_KEEPALIVE");
         exit(EXIT_FAILURE);
     }
 

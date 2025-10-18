@@ -1,7 +1,7 @@
 # DEFCON 34
 *** Welcome to DEFCON 34! ***
 Disclaimer: Connecting with PuTTY is NOT supported!
-You walk into the DEFCON 34 Village and notice a sea 
+You walk into the DEFCON 34 Village and notice an ocean
 of hackers sitting around tables with their laptops. 
 You notice one table by itself with a lone laptop on 
 display with a text-based game running.
@@ -52,7 +52,7 @@ What do you do?
         [4] Return to Main Menu
         [5] Terminate Connection
 
-[2] Search the office (Roll a 3-sided dice for Perception)
+[2] Search the Village (Roll a 3-sided dice for Perception)
 
     [1] You roll the three-sided dice and the number 1 is facing
         up. Your critical lack of perception focuses on the
@@ -83,7 +83,7 @@ What do you do?
 
     [2] You roll the three-sided dice and the number 2 is
         facing up. Your average amount of perception notices a
-        fancy coffee machine in the break room.
+        fancy coffee machine near the Village Entrance.
         What shall you do now?
 
             [1] Eagerly brew yourself a cup of coffee!
@@ -106,36 +106,36 @@ What do you do?
             [4] Terminate Connection
 
     [3] You roll the three-sided dice and the number 3 is
-        facing up. Your exceptional perception notices a Rival
-        Nemesis MXVII-10K NERF GUN on the conference table!
+        facing up. Your exceptional perception notices a stack of exclusive, 
+        decorative, 'DEFCON GOON' stickers near the GOONS' command center! 
+        This is the perfect opportunity for some light-hearted chaos.
         What shall you do now?
 
-            [1] Grab the Nerf Gun and go hunting for the BLS Owners
+        [1] Immediately start sticking the stickers onto the GOONS' official badges
 
-                You quickly grab the Nerf Nemesis Machine Gun with both
-                hands and sprint into the nearest Owner's office screaming
-                "MEET MY LITTLE FRIEND\" at the top of your lungs. But,
-                instead of a surprise attack - you walk into an ambush. All the
-                Owners unleash Nerf Fury upon you as you walk into the door.
+            You quickly grab a handful of stickers and rush the nearest group of 
+            GOONS, slapping stickers onto their badges! You initially catch two 
+            GOONS by surprise! However, the third GOON side-steps your attempt 
+            and then slaps a giant, embarrassing 'I <3 WINDOWS' sticker 
+            right onto your forehead. You realize you have been out-pranked.
 
-                [>] Return to Main Menu or Disconnect
+            [>] Return to Main Menu or Disconnect
 
-            [2] Set up a Nerf Land Mine near the Nerf Machine Gun
+        [2] Stealthily turn the GOONS' "Information Desk" into a "Free Compliments" kiosk
 
-                With amazing skill and finesse, you set up the Nerf Land 
-                Mine positioned perfect near the Nerf Nemesis Machine 
-                Gun and lie patiently in the other room with the remote 
-                detonator. One of the Owners walk towards it with delight 
-                in their eyes! As you press the Remote Detonator, you 
-                quickly remember that \"This Side Towards Enemy\" was 
-                facing you! You get pelted by your own Nerf Land Mine!
+            With amazing stealth and finesse, you glide through the halls, using your 
+            your technical knowledge to perfectly align the rare, decorative stickers 
+            over the 'Information Desk' text on their sign. You then quickly scribble 
+            'Free Compliments Kiosk' on their whiteboard and stealthly sneak away.
+            Moments later, you watch as a bewildered G00N sits down at the desk, 
+            forced to dole out awkward compliments to every attendee who walks up.
 
-                [>] Return to Main Menu or Disconnect
+            [>] Return to Main Menu or Disconnect
 
-            [3] Return to Main Menu
-            [4] Terminate Connection
+        [3] Return to Main Menu
+        [4] Terminate Connection
 
-[3] Hack Black Lantern Security
+[3] Hack the DEFCON Main Frame
 
     Interesting Move. How would you do it?
 
@@ -149,17 +149,17 @@ What do you do?
         [3] Segmentation fault (core dumped). Better luck next time.
 
         [4] Stack Trace: undefined result
-            at bls-party (function: idontwannacry.cs:14)
-            at bls-party (function: youmadcowbro.cs:45)
-            at bls-party (function: styleguide-for-400.nist:800-63)
+            at defcon-party (function: idontwannacry.cs:14)
+            at defcon-party (function: youmadcowbro.cs:45)
+            at defcon-party (function: styleguide-for-400.nist:800-63)
 
         [5] Username is not in the sudoers file. This incident will be reported.
 
         [>] Return to Main Menu or Disconnect
 
-[4] Turn off the Christmas Music
+[4] Convince SomaFM to turn off the Music in the Chillout Room
 
-    You're a mean one, Mr. Grinch!
+    Don't Firewall my Vibes, Chillout Saboteur!
 
     [>] Return to Main Menu or Disconnect
 
