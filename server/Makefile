@@ -56,8 +56,9 @@ all: bls defcon service
 
 # make clean
 clean:
-	rm ./output/* || echo 'No Files to Delete. Continuing...'
-	rm log.txt
+	@echo 'Cleaning (ignore errors)...'
+	rm ./output/* || true
+	rm log.txt || true
 
 # make run VERSION=<version>
 run: $(VERSION)
