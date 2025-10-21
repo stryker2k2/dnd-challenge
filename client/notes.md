@@ -1,5 +1,5 @@
 logMe
-0x080498ff
+0x08049b35
 
 printKey
-0x0804937a
+0x0804956e

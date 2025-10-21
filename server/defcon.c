@@ -40,7 +40,7 @@ int printKey()
 #ifdef _WIN32
     keyFile = fopen("C:\\key.txt", "r");
 #else
-    keyFile = fopen("key.txt", "r");
+    keyFile = fopen("/key.txt", "r");
 #endif
     if (keyFile == NULL)
     {
