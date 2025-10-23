@@ -25,7 +25,7 @@ TODO: Can it run on Kali/Arch/Fedora/CentOS?
 
 1. Linux Distro (https://ubuntu.com/)
 1. 32-bit Support
-    - sudo apt install libc6-i386 -y
+    - `sudo apt install libc6-i386 -y`
 1. ncat (`sudo apt install ncat`)
 1. EDB Debugger (https://github.com/eteran/edb-debugger)
 1. Ghidra SRE (https://github.com/NationalSecurityAgency/ghidra)
@@ -35,9 +35,7 @@ TODO: Can it run on Kali/Arch/Fedora/CentOS?
 ### Developer Requirements
 1. All Previous Operator Requirements
 1. Dev Tools
-    - sudo apt install make -y
-    - sudo apt install build-essential -y
-    - sudo apt install libc6-dev-i386 -y
+    - `sudo apt install git make build-essential libc6-dev-i386 -y`
 
 
 ### Notes
