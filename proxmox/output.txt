@@ -1,0 +1,96 @@
+
+--- Raw API Response for LXC Containers ---
+[
+    {
+        "cpu": 0,
+        "disk": 0,
+        "netout": 0,
+        "maxmem": 1073741824,
+        "template": 1,
+        "type": "lxc",
+        "cpus": 2,
+        "status": "stopped",
+        "name": "target",
+        "diskwrite": 0,
+        "maxswap": 1073741824,
+        "vmid": 201,
+        "tags": "defcon;template",
+        "diskread": 0,
+        "netin": 0,
+        "maxdisk": 8589934592,
+        "uptime": 0,
+        "swap": 0,
+        "mem": 0
+    },
+    {
+        "maxswap": 1073741824,
+        "pid": 411165,
+        "diskwrite": 0,
+        "maxdisk": 8589934592,
+        "netin": 10577314,
+        "mem": 42315776,
+        "uptime": 6007,
+        "swap": 0,
+        "vmid": 101,
+        "tags": "defcon;linked",
+        "diskread": 0,
+        "disk": 573046784,
+        "netout": 435184,
+        "maxmem": 1073741824,
+        "cpu": 0.00032637683586677,
+        "status": "running",
+        "cpus": 2,
+        "type": "lxc",
+        "name": "target"
+    },
+    {
+        "uptime": 0,
+        "swap": 0,
+        "mem": 0,
+        "netin": 0,
+        "maxdisk": 8589934592,
+        "tags": "defcon;template",
+        "diskread": 0,
+        "vmid": 202,
+        "maxswap": 1073741824,
+        "diskwrite": 0,
+        "name": "develop",
+        "type": "lxc",
+        "cpus": 2,
+        "status": "stopped",
+        "template": 1,
+        "netout": 0,
+        "maxmem": 1073741824,
+        "disk": 0,
+        "cpu": 0
+    },
+    {
+        "type": "lxc",
+        "cpus": 2,
+        "status": "running",
+        "name": "develop",
+        "disk": 1096155136,
+        "netout": 6628986,
+        "maxmem": 1073741824,
+        "cpu": 0.00317193683222765,
+        "netin": 64838750,
+        "maxdisk": 8589934592,
+        "uptime": 2722,
+        "swap": 104960000,
+        "mem": 938487808,
+        "vmid": 102,
+        "tags": "defcon;non-linked",
+        "diskread": 90603520,
+        "maxswap": 1073741824,
+        "pid": 440783,
+        "diskwrite": 258457600
+    }
+]
+
+--- Filtered Results ---
+CT ID  | Status     | Name
+------------------------------
+(Skipped: 201 is 'stopped')
+101    | running    | target
+(Skipped: 202 is 'stopped')
+102    | running    | develop
