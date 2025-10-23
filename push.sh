@@ -1,20 +1,25 @@
 #!/bin/bash
 
+target="192.168.1.101"
+develop="192.168.1.102"
+
 set +x
 
 echo "[+] Cleaning Remote Server"
-ssh dev@192.168.122.216 'pkill defcon || true'
-ssh dev@192.168.122.216 'rm -rf /home/dev/repo/dnd-challenge || true'
+ssh dev@$virtmgr 'pkill defcon || true'
+ssh dev@$virtmgr 'rm -rf /home/dev/repo/dnd-challenge || true'
 
 echo "[+] Copying Repo to Remote Server"
-ssh dev@192.168.122.216 'mkdir /home/dev/repo/dnd-challenge'
-scp -r /home/jack/repo/dnd-challenge/server dev@192.168.122.216:/home/dev/repo/dnd-challenge
+ssh dev@$virtmgr 'mkdir /home/dev/repo/dnd-challenge'
+scp -r /home/jack/repo/dnd-challenge/server dev@$virtmgr:/home/dev/repo/dnd-challenge
 
 echo "[+] Compiling CTF Executable"
-ssh dev@192.168.122.216 'cd /home/dev/repo/dnd-challenge/server && make clean && make all'
-ssh dev@192.168.122.216 'cp /home/dev/Documents/key.txt /home/dev/repo/dnd-challenge/server/output'
+ssh dev@$virtmgr 'cd /home/dev/repo/dnd-challenge/server && make clean && make all'
 
-echo "[+] Done. Launch with 'ncat 192.168.122.216 3724'"
-ssh dev@192.168.122.216 '/home/dev/repo/dnd-challenge/server/output/defcon'
+echo "[+] Moving CTF Executable to Target Box"
+scp dev@$virtmgr:/home/dev/repo/dnd-challenge/server/output/defcon dev@$proxmox:/home/dev/
+
+echo "[+] Done. Launch with 'ncat $proxmox 3724'"
+ssh dev@$proxmox 'bash -c /home/dev/defcon'
 
 set -x
