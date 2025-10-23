@@ -19,20 +19,18 @@ proxmox = ProxmoxAPI(
     token_value='72e45e51-45de-4058-877c-e50c01a1cd75',
     verify_ssl=False 
 )
-    
-# Check if the Node is correct by attempting the API call
-containers = proxmox.nodes(PROXMOX_NODE).lxc.get()
-
-# Analyze and print the running containers
-print("\n--- Containers Found Results ---")
-print(f"{'CT ID':<6} | {'Status':<10} | {'Name':<8} | {'Tags'}")
-print("-" * 50)
-
-
 
 def printContainers():
     global active_count
     global container_ids
+
+    # Check if the Node is correct by attempting the API call
+    containers = proxmox.nodes(PROXMOX_NODE).lxc.get()
+
+    # Analyze and print the running containers
+    print("\n--- Containers Found Results ---")
+    print(f"{'CT ID':<6} | {'Status':<10} | {'Name':<8} | {'Tags'}")
+    print("-" * 50)
 
     for container in containers:
         vmid = container.get('vmid')
@@ -79,6 +77,22 @@ while 'OK' not in exitstatus:
     exitstatus = Tasks.blocking_status(proxmox, clone_task)['exitstatus']
     time.sleep(1)
 
-print(exitstatus)
+print(f'Clone Task Completed with exitstatus: {exitstatus}\n')
+
+NEW_IP_ADDRESS = f"192.168.1.{NEW_CT_ID}/24"
+GATEWAY_IP = "192.168.1.100"
+
+FULL_NET_CONFIG = (
+        f"name=eth0,"
+        f"bridge=vmbr0,"
+        f"ip={NEW_IP_ADDRESS},"
+        f"gw={GATEWAY_IP}"
+    )
+
+proxmox.nodes(PROXMOX_NODE).lxc(NEW_CT_ID).config.put(
+        net0=FULL_NET_CONFIG
+    )
+
+print(f"Successfully set IP address for CT {NEW_CT_ID} to {NEW_IP_ADDRESS}\n")
 
 printContainers()
