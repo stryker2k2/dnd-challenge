@@ -9,7 +9,6 @@ STORAGE_NAME = 'BARRACUDA'
 SOURCE_CT_ID = 201              # DEFCON Target Template
 NEW_CT_NAME = 'target'          # New Template Hostname
 NEW_CT_ID = 0                   # New Template CT ID Placeholder
-active_count = 0
 container_ids = []
 
 proxmox = ProxmoxAPI(
@@ -21,8 +20,8 @@ proxmox = ProxmoxAPI(
 )
 
 def printContainers():
-    global active_count
     global container_ids
+    active_count = 0
 
     # Check if the Node is correct by attempting the API call
     containers = proxmox.nodes(PROXMOX_NODE).lxc.get()
@@ -61,7 +60,7 @@ for id in sorted(container_ids):
         break
 
 print(f"\n--- Cloning CT {SOURCE_CT_ID} to new CT {NEW_CT_ID} ---")
-    
+
 clone_task = proxmox.nodes(PROXMOX_NODE).lxc(SOURCE_CT_ID).clone.post(
     newid=NEW_CT_ID,
     full=0                # Use 0 for linked clone (fast)
@@ -71,7 +70,6 @@ print(f"Clone task started successfully.")
 print(f"Proxmox Task ID: {clone_task}")
 
 # Wait for the clone task to complete before continuing
-
 exitstatus = ''
 while 'OK' not in exitstatus:
     exitstatus = Tasks.blocking_status(proxmox, clone_task)['exitstatus']

@@ -50,7 +50,7 @@ int is_ctf_exec(const char *pid_str) {
 int main() {
     DIR *proc_dir;
     struct dirent *entry;
-    const char *full_path = "/home/jack/repo/dnd-challenge/server/output/defcon";
+    const char *full_path = "/home/dev/ctf/defcon";
 
     printf("\n**************************************************************\n"
             "\r**  This service will look to see if the CTF Executable is  **\n"
