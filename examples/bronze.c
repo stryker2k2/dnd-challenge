@@ -20,10 +20,10 @@ int logToFile(char *logTxt)
 
 int main(int argc, char *argv[])
 {
-    logToFile(argv[1])
+    logToFile(argv[1]);
 }
 
 
 
 // How to Compile:
-gcc -m32 -no-pie -O0 -Wno-format-truncation -fno-stack-protector -o bronze
+// gcc -m32 -no-pie -O0 -Wno-format-truncation -fno-stack-protector bronze.c -o bronze
