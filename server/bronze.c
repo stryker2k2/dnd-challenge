@@ -1,11 +1,15 @@
 #include <stdio.h>
 #include <string.h>
 
-int logToFile(char *logTxt)
+int logToFile()
 { 
     char tmpLog[64];
-    printf("[+] logging to file");
-    sprintf(tmpLog, "[+] %s", logTxt);
+
+    printf("Enter Text: ");
+
+    fgets(tmpLog, sizeof(tmpLog) * 10, stdin);
+
+    printf("[+] logging to file\n");
     FILE *logFile = fopen("log.txt", "w");
     if (logFile == NULL)
     {
@@ -14,6 +18,8 @@ int logToFile(char *logTxt)
 
     fprintf(logFile, "%s", tmpLog);
     fclose(logFile);
+
+    fflush(stdout);
 
     return 0;
 }
@@ -24,18 +30,34 @@ void printSecret() {
     int key = 0x1337;
     int i = 0;
 
-    printf("CTF-KEY ");
+    // The array has 18 elements. We need a buffer of size 19 (18 chars + 1 null byte).
+    char decoded_buffer[19]; 
+
+    // --- Decoding and Storing ---
     while ((encoded_secret[i] ^ key) != 0) {
-        printf("%c", (char)(encoded_secret[i] ^ key));
+        
+        // Decode the character using XOR and cast it to a char
+        char decoded_char = (char)(encoded_secret[i] ^ key);
+        
+        // Store the decoded character in the buffer
+        decoded_buffer[i] = decoded_char;
+        
         i++;
     }
+
+    decoded_buffer[i] = '\0';
+
+    printf("%s %s", "CTF-KEY", decoded_buffer);
+
+    fflush(stdout);
 }
 
 int main(int argc, char *argv[])
 {
-    logToFile(argv[1]);
+    printf("Starting\n");
+    logToFile();
 }
 
 
 // How to Compile:
-// gcc -m32 -no-pie -O0 -Wno-format-truncation -fno-stack-protector bronze.c -o bronze
+// gcc -m32 -no-pie -O0 -Wno-format-truncation -w -fno-stack-protector bronze.c -o bronze
