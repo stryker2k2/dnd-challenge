@@ -3,6 +3,7 @@ GCC32 := gcc -m32
 
 bls_version = bls
 defcon_version = defcon
+bronze_version = bronze
 
 VERSION ?= defcon
 
@@ -10,6 +11,7 @@ VERSION ?= defcon
 ifeq ($(OS),Windows_NT)
 	BLS_EXEC = $(bls_version).exe
 	DEFCON_EXEC = $(defcon_version).exe
+	BRONZE_EXEC = $(bronze_version).exe
 	COMPILE_CMD = $(MINGW32)
 
     # Windows needs WinSock2
@@ -17,28 +19,33 @@ ifeq ($(OS),Windows_NT)
 else
 	BLS_EXEC = $(bls_version)
 	DEFCON_EXEC = $(defcon_version)
+	BRONZE_EXEC = $(bronze_version)
 	COMPILE_CMD = $(GCC32)
 
     # Blank for Linux
 	OS_CFLAGS =
 endif
 
-# Check BLS or DEFCON Version
 ifeq ($(VERSION),bls)
-    # BLS Version
     RUN_EXEC_VAR = $(BLS_EXEC)
 else
-    # DEFCON Version
-    RUN_EXEC_VAR = $(DEFCON_EXEC)
+    ifeq ($(VERSION),bronze)
+        RUN_EXEC_VAR = $(BRONZE_EXEC)
+    
+    else
+        RUN_EXEC_VAR = $(DEFCON_EXEC)
+    endif
+
 endif
 
 # SOURCES
 BLS_SOURCES = $(bls_version).c $(bls_version).h
 DEFCON_SOURCES = $(defcon_version).c $(defcon_version).h
-CFLAGS = -no-pie -O0 -Wno-format-truncation -fno-stack-protector
+BRONZE_SOURCES = $(bronze_version).c
+CFLAGS = -no-pie -O0 -w -fno-stack-protector
 
 # PHONY TARGETS
-.PHONY: all clean run bls defcon service
+.PHONY: all clean run bls defcon service bronze
 
 # make bls
 $(BLS_EXEC): $(BLS_SOURCES)
@@ -47,6 +54,10 @@ $(BLS_EXEC): $(BLS_SOURCES)
 # make defcon
 $(DEFCON_EXEC): $(DEFCON_SOURCES)
 	$(COMPILE_CMD) $(DEFCON_SOURCES) -o ./output/$(DEFCON_EXEC) $(CFLAGS) $(OS_CFLAGS)
+
+# make bronze
+$(BRONZE_EXEC): $(BRONZE_SOURCES)
+	$(COMPILE_CMD) $(BRONZE_SOURCES) -o ./output/$(BRONZE_EXEC) $(CFLAGS) $(OS_CFLAGS)
 
 service:
 	$(COMPILE_CMD) service.c -o ./output/service
